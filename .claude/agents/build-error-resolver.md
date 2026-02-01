@@ -22,7 +22,7 @@ You are an expert build error resolution specialist focused on fixing TypeScript
 
 ### Build & Type Checking Tools
 - **tsc** - TypeScript compiler for type checking
-- **npm/yarn** - Package management
+- **pnpm** - Package management
 - **eslint** - Linting (can cause build failures)
 - **next build** - Next.js production build
 
@@ -44,10 +44,10 @@ npx tsc --noEmit path/to/file.ts
 npx eslint . --ext .ts,.tsx,.js,.jsx
 
 # Next.js build (production)
-npm run build
+pnpm run build
 
 # Next.js build with debug
-npm run build -- --debug
+pnpm run build -- --debug
 ```
 
 ## Error Resolution Workflow
@@ -157,7 +157,7 @@ import { formatDate } from '@/lib/utils'
 import { formatDate } from '../lib/utils'
 
 // ✅ FIX 3: Install missing package
-npm install @/lib/utils
+pnpm install @/lib/utils
 ```
 
 **Pattern 5: Type Mismatch**
@@ -230,8 +230,8 @@ async function fetchData() {
 import React from 'react'
 
 // ✅ FIX: Install dependencies
-npm install react
-npm install --save-dev @types/react
+pnpm install react
+pnpm install --save-dev @types/react
 
 // ✅ CHECK: Verify package.json has dependency
 {
@@ -429,10 +429,10 @@ Parameter 'market' implicitly has an 'any' type.
 ## Verification Steps
 
 1. ✅ TypeScript check passes: `npx tsc --noEmit`
-2. ✅ Next.js build succeeds: `npm run build`
+2. ✅ Next.js build succeeds: `pnpm run build`
 3. ✅ ESLint check passes: `npx eslint .`
 4. ✅ No new errors introduced
-5. ✅ Development server runs: `npm run dev`
+5. ✅ Development server runs: `pnpm run dev`
 
 ## Summary
 
@@ -452,7 +452,7 @@ Parameter 'market' implicitly has an 'any' type.
 ## When to Use This Agent
 
 **USE when:**
-- `npm run build` fails
+- `pnpm run build` fails
 - `npx tsc --noEmit` shows errors
 - Type errors blocking development
 - Import/module resolution errors
@@ -493,34 +493,34 @@ Parameter 'market' implicitly has an 'any' type.
 npx tsc --noEmit
 
 # Build Next.js
-npm run build
+pnpm run build
 
 # Clear cache and rebuild
 rm -rf .next node_modules/.cache
-npm run build
+pnpm run build
 
 # Check specific file
 npx tsc --noEmit src/path/to/file.ts
 
 # Install missing dependencies
-npm install
+pnpm install
 
 # Fix ESLint issues automatically
 npx eslint . --fix
 
 # Update TypeScript
-npm install --save-dev typescript@latest
+pnpm install --save-dev typescript@latest
 
 # Verify node_modules
-rm -rf node_modules package-lock.json
-npm install
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
 ```
 
 ## Success Metrics
 
 After build error resolution:
 - ✅ `npx tsc --noEmit` exits with code 0
-- ✅ `npm run build` completes successfully
+- ✅ `pnpm run build` completes successfully
 - ✅ No new errors introduced
 - ✅ Minimal lines changed (< 5% of affected file)
 - ✅ Build time not significantly increased

@@ -21,7 +21,7 @@ You are an expert refactoring specialist focused on code cleanup and consolidati
 
 ### Detection Tools
 - **knip** - Find unused files, exports, dependencies, types
-- **depcheck** - Identify unused npm dependencies
+- **depcheck** - Identify unused dependencies
 - **ts-prune** - Find unused TypeScript exports
 - **eslint** - Check for unused disable-directives and variables
 
@@ -66,7 +66,7 @@ For each item to remove:
 ```
 a) Start with SAFE items only
 b) Remove one category at a time:
-   1. Unused npm dependencies
+   1. Unused dependencies
    2. Unused internal exports
    3. Unused files
    4. Duplicate code
@@ -252,9 +252,9 @@ If something breaks after removal:
 1. **Immediate rollback:**
    ```bash
    git revert HEAD
-   npm install
-   npm run build
-   npm test
+   pnpm install
+   pnpm run build
+   pnpm test
    ```
 
 2. **Investigate:**

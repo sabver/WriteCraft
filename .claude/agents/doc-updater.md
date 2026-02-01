@@ -237,17 +237,17 @@ Brief description
 
 \`\`\`bash
 # Installation
-npm install
+pnpm install
 
 # Environment variables
 cp .env.example .env.local
 # Fill in: OPENAI_API_KEY, REDIS_URL, etc.
 
 # Development
-npm run dev
+pnpm run dev
 
 # Build
-npm run build
+pnpm run build
 \`\`\`
 
 ## Architecture
