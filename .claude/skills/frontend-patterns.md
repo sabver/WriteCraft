@@ -1,199 +1,464 @@
 ---
 name: frontend-patterns
-description: Frontend development patterns for React, Next.js, state management, performance optimization, and UI best practices.
+description: Frontend development patterns for Next.js App Router, shadcn/ui, Tailwind CSS, state management, and performance optimization.
 ---
 
 # Frontend Development Patterns
 
-Modern frontend patterns for React, Next.js, and performant user interfaces.
+Patterns for Next.js (Turbopack) + React + TypeScript + shadcn/ui + Tailwind CSS.
 
-## Component Patterns
+## Next.js App Router Patterns
 
-### Composition Over Inheritance
+### Server Components vs Client Components
 
 ```typescript
-// ✅ GOOD: Component composition
-interface CardProps {
-  children: React.ReactNode
-  variant?: 'default' | 'outlined'
-}
+// Server Component (default) - no directive needed
+// Runs on the server, can access DB/filesystem directly, zero JS sent to client
+export default async function ArticlePage({ params }: { params: { id: string } }) {
+  const article = await db.article.findUnique({ where: { id: params.id } })
 
-export function Card({ children, variant = 'default' }: CardProps) {
-  return <div className={`card card-${variant}`}>{children}</div>
+  return (
+    <article>
+      <h1>{article.title}</h1>
+      <ArticleContent content={article.content} />
+      {/* Client Component for interactivity */}
+      <LikeButton articleId={article.id} initialCount={article.likes} />
+    </article>
+  )
 }
-
-export function CardHeader({ children }: { children: React.ReactNode }) {
-  return <div className="card-header">{children}</div>
-}
-
-export function CardBody({ children }: { children: React.ReactNode }) {
-  return <div className="card-body">{children}</div>
-}
-
-// Usage
-<Card>
-  <CardHeader>Title</CardHeader>
-  <CardBody>Content</CardBody>
-</Card>
 ```
 
-### Compound Components
-
 ```typescript
-interface TabsContextValue {
-  activeTab: string
-  setActiveTab: (tab: string) => void
-}
+// Client Component - needs "use client" directive
+// Required for: useState, useEffect, event handlers, browser APIs
+"use client"
 
-const TabsContext = createContext<TabsContextValue | undefined>(undefined)
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 
-export function Tabs({ children, defaultTab }: {
-  children: React.ReactNode
-  defaultTab: string
+export function LikeButton({ articleId, initialCount }: {
+  articleId: string
+  initialCount: number
 }) {
-  const [activeTab, setActiveTab] = useState(defaultTab)
+  const [count, setCount] = useState(initialCount)
 
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      {children}
-    </TabsContext.Provider>
-  )
+  const handleLike = async () => {
+    setCount(prev => prev + 1)
+    await fetch(`/api/articles/${articleId}/like`, { method: "POST" })
+  }
+
+  return <Button onClick={handleLike}>Like ({count})</Button>
 }
-
-export function TabList({ children }: { children: React.ReactNode }) {
-  return <div className="tab-list">{children}</div>
-}
-
-export function Tab({ id, children }: { id: string, children: React.ReactNode }) {
-  const context = useContext(TabsContext)
-  if (!context) throw new Error('Tab must be used within Tabs')
-
-  return (
-    <button
-      className={context.activeTab === id ? 'active' : ''}
-      onClick={() => context.setActiveTab(id)}
-    >
-      {children}
-    </button>
-  )
-}
-
-// Usage
-<Tabs defaultTab="overview">
-  <TabList>
-    <Tab id="overview">Overview</Tab>
-    <Tab id="details">Details</Tab>
-  </TabList>
-</Tabs>
 ```
 
-### Render Props Pattern
+### When to use "use client"
+
+```
+Server Component (default)    Client Component ("use client")
+- Data fetching               - useState / useEffect
+- DB / filesystem access      - Event handlers (onClick, onChange)
+- Rendering static content    - Browser APIs (localStorage, window)
+- SEO-critical content        - Interactive UI (forms, toggles)
+- Layout shells               - Third-party client-only libs
+```
+
+### Layouts and Loading States
 
 ```typescript
-interface DataLoaderProps<T> {
-  url: string
-  children: (data: T | null, loading: boolean, error: Error | null) => React.ReactNode
+// app/layout.tsx - Root layout (Server Component)
+import { Inter } from "next/font/google"
+import "@/styles/globals.css"
+
+const inter = Inter({ subsets: ["latin"] })
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>{children}</body>
+    </html>
+  )
 }
 
-export function DataLoader<T>({ url, children }: DataLoaderProps<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+// app/dashboard/loading.tsx - Automatic loading UI
+import { Skeleton } from "@/components/ui/skeleton"
 
-  useEffect(() => {
-    fetch(url)
-      .then(res => res.json())
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false))
-  }, [url])
-
-  return <>{children(data, loading, error)}</>
+export default function Loading() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-[250px]" />
+      <Skeleton className="h-4 w-[400px]" />
+      <Skeleton className="h-4 w-[350px]" />
+    </div>
+  )
 }
 
-// Usage
-<DataLoader<Market[]> url="/api/markets">
-  {(markets, loading, error) => {
-    if (loading) return <Spinner />
-    if (error) return <Error error={error} />
-    return <MarketList markets={markets!} />
-  }}
-</DataLoader>
+// app/dashboard/error.tsx - Error boundary (must be Client Component)
+"use client"
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <h2>Something went wrong</h2>
+      <Button onClick={reset}>Try again</Button>
+    </div>
+  )
+}
+```
+
+### Server Actions
+
+```typescript
+// app/actions.ts
+"use server"
+
+import { revalidatePath } from "next/cache"
+import { z } from "zod"
+
+const CreateArticleSchema = z.object({
+  title: z.string().min(1).max(200),
+  content: z.string().min(1),
+})
+
+export async function createArticle(formData: FormData) {
+  const validated = CreateArticleSchema.parse({
+    title: formData.get("title"),
+    content: formData.get("content"),
+  })
+
+  await db.article.create({ data: validated })
+  revalidatePath("/articles")
+}
+
+// Usage in Client Component
+"use client"
+
+import { createArticle } from "@/app/actions"
+
+export function CreateArticleForm() {
+  return (
+    <form action={createArticle}>
+      <Input name="title" placeholder="Title" />
+      <Textarea name="content" placeholder="Content" />
+      <Button type="submit">Create</Button>
+    </form>
+  )
+}
+```
+
+## Next.js Optimization Patterns
+
+### next/image
+
+```typescript
+import Image from "next/image"
+
+// Automatic optimization: lazy loading, responsive sizes, WebP/AVIF
+export function Avatar({ src, name }: { src: string; name: string }) {
+  return (
+    <Image
+      src={src}
+      alt={name}
+      width={40}
+      height={40}
+      className="rounded-full"
+    />
+  )
+}
+
+// Fill mode for unknown dimensions
+export function HeroImage({ src }: { src: string }) {
+  return (
+    <div className="relative h-[400px] w-full">
+      <Image
+        src={src}
+        alt="Hero"
+        fill
+        className="object-cover"
+        priority  // Preload above-the-fold images
+      />
+    </div>
+  )
+}
+```
+
+### next/link
+
+```typescript
+import Link from "next/link"
+
+// Automatic prefetching on viewport entry
+export function Navigation() {
+  return (
+    <nav className="flex gap-4">
+      <Link href="/dashboard" className="text-sm font-medium">
+        Dashboard
+      </Link>
+      <Link href="/articles" prefetch={false}>
+        Articles
+      </Link>
+    </nav>
+  )
+}
+```
+
+### next/font
+
+```typescript
+// app/layout.tsx - Automatic font optimization, zero layout shift
+import { Inter, JetBrains_Mono } from "next/font/google"
+import localFont from "next/font/local"
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+})
+
+// Local font
+const customFont = localFont({
+  src: "./fonts/CustomFont.woff2",
+  variable: "--font-custom",
+})
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+      <body className="font-sans">{children}</body>
+    </html>
+  )
+}
+```
+
+## shadcn/ui Component Patterns
+
+### cn() Utility for Class Merging
+
+```typescript
+// lib/utils.ts (auto-generated by shadcn init)
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+// Usage: merge Tailwind classes safely, last wins on conflicts
+cn("px-4 py-2", "px-6")           // "px-6 py-2"
+cn("text-red-500", condition && "text-blue-500")  // conditional classes
+```
+
+### Using shadcn/ui Components
+
+```typescript
+// Install: pnpm dlx shadcn@latest add button card dialog
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
+export function ArticleCard({ article }: { article: Article }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{article.title}</CardTitle>
+        <CardDescription>{article.excerpt}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{article.content}</p>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button variant="ghost" size="sm">Share</Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">Preview</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{article.title}</DialogTitle>
+              <DialogDescription>{article.excerpt}</DialogDescription>
+            </DialogHeader>
+            <div className="prose">{article.content}</div>
+          </DialogContent>
+        </Dialog>
+      </CardFooter>
+    </Card>
+  )
+}
+```
+
+### Extending shadcn/ui Components with Variants
+
+```typescript
+// components/ui/badge.tsx - shadcn component, safe to extend
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
+
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors",
+  {
+    variants: {
+      variant: {
+        default: "border-transparent bg-primary text-primary-foreground",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
+        destructive: "border-transparent bg-destructive text-destructive-foreground",
+        outline: "text-foreground",
+        // Custom variant for WriteCraft
+        success: "border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+export function Badge({ className, variant, ...props }: BadgeProps) {
+  return <div className={cn(badgeVariants({ variant }), className)} {...props} />
+}
+```
+
+### Composing Custom Components from shadcn/ui
+
+```typescript
+// Don't rewrite Card/Tabs/Dialog from scratch - compose from shadcn/ui
+"use client"
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+export function EditorPanel() {
+  return (
+    <Tabs defaultValue="write" className="w-full">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="write">Write</TabsTrigger>
+        <TabsTrigger value="preview">Preview</TabsTrigger>
+      </TabsList>
+      <TabsContent value="write">
+        <Card>
+          <CardHeader>
+            <CardTitle>Editor</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Editor component */}
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="preview">
+        <Card>
+          <CardHeader>
+            <CardTitle>Preview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Preview component */}
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  )
+}
+```
+
+### Form Handling with shadcn/ui + React Hook Form + Zod
+
+```typescript
+"use client"
+
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+
+const articleSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200),
+  content: z.string().min(1, "Content is required"),
+})
+
+type ArticleFormValues = z.infer<typeof articleSchema>
+
+export function ArticleForm({ onSubmit }: {
+  onSubmit: (values: ArticleFormValues) => Promise<void>
+}) {
+  const form = useForm<ArticleFormValues>({
+    resolver: zodResolver(articleSchema),
+    defaultValues: { title: "", content: "" },
+  })
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Article title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="content"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Content</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Write your article..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Saving..." : "Save"}
+        </Button>
+      </form>
+    </Form>
+  )
+}
 ```
 
 ## Custom Hooks Patterns
-
-### State Management Hook
-
-```typescript
-export function useToggle(initialValue = false): [boolean, () => void] {
-  const [value, setValue] = useState(initialValue)
-
-  const toggle = useCallback(() => {
-    setValue(v => !v)
-  }, [])
-
-  return [value, toggle]
-}
-
-// Usage
-const [isOpen, toggleOpen] = useToggle()
-```
-
-### Async Data Fetching Hook
-
-```typescript
-interface UseQueryOptions<T> {
-  onSuccess?: (data: T) => void
-  onError?: (error: Error) => void
-  enabled?: boolean
-}
-
-export function useQuery<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  options?: UseQueryOptions<T>
-) {
-  const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState<Error | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  const refetch = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const result = await fetcher()
-      setData(result)
-      options?.onSuccess?.(result)
-    } catch (err) {
-      const error = err as Error
-      setError(error)
-      options?.onError?.(error)
-    } finally {
-      setLoading(false)
-    }
-  }, [fetcher, options])
-
-  useEffect(() => {
-    if (options?.enabled !== false) {
-      refetch()
-    }
-  }, [key, refetch, options?.enabled])
-
-  return { data, error, loading, refetch }
-}
-
-// Usage
-const { data: markets, loading, error, refetch } = useQuery(
-  'markets',
-  () => fetch('/api/markets').then(r => r.json()),
-  {
-    onSuccess: data => console.log('Fetched', data.length, 'markets'),
-    onError: err => console.error('Failed:', err)
-  }
-)
-```
 
 ### Debounce Hook
 
@@ -202,25 +467,22 @@ export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value)
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
+    const handler = setTimeout(() => setDebouncedValue(value), delay)
     return () => clearTimeout(handler)
   }, [value, delay])
 
   return debouncedValue
 }
+```
 
-// Usage
-const [searchQuery, setSearchQuery] = useState('')
-const debouncedQuery = useDebounce(searchQuery, 500)
+### Toggle Hook
 
-useEffect(() => {
-  if (debouncedQuery) {
-    performSearch(debouncedQuery)
-  }
-}, [debouncedQuery])
+```typescript
+export function useToggle(initialValue = false): [boolean, () => void] {
+  const [value, setValue] = useState(initialValue)
+  const toggle = useCallback(() => setValue(v => !v), [])
+  return [value, toggle]
+}
 ```
 
 ## State Management Patterns
@@ -228,52 +490,54 @@ useEffect(() => {
 ### Context + Reducer Pattern
 
 ```typescript
+"use client"
+
 interface State {
-  markets: Market[]
-  selectedMarket: Market | null
+  documents: Document[]
+  activeDocument: Document | null
   loading: boolean
 }
 
 type Action =
-  | { type: 'SET_MARKETS'; payload: Market[] }
-  | { type: 'SELECT_MARKET'; payload: Market }
-  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: "SET_DOCUMENTS"; payload: Document[] }
+  | { type: "SET_ACTIVE"; payload: Document }
+  | { type: "SET_LOADING"; payload: boolean }
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'SET_MARKETS':
-      return { ...state, markets: action.payload }
-    case 'SELECT_MARKET':
-      return { ...state, selectedMarket: action.payload }
-    case 'SET_LOADING':
+    case "SET_DOCUMENTS":
+      return { ...state, documents: action.payload }
+    case "SET_ACTIVE":
+      return { ...state, activeDocument: action.payload }
+    case "SET_LOADING":
       return { ...state, loading: action.payload }
     default:
       return state
   }
 }
 
-const MarketContext = createContext<{
+const DocumentContext = createContext<{
   state: State
   dispatch: Dispatch<Action>
 } | undefined>(undefined)
 
-export function MarketProvider({ children }: { children: React.ReactNode }) {
+export function DocumentProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, {
-    markets: [],
-    selectedMarket: null,
-    loading: false
+    documents: [],
+    activeDocument: null,
+    loading: false,
   })
 
   return (
-    <MarketContext.Provider value={{ state, dispatch }}>
+    <DocumentContext.Provider value={{ state, dispatch }}>
       {children}
-    </MarketContext.Provider>
+    </DocumentContext.Provider>
   )
 }
 
-export function useMarkets() {
-  const context = useContext(MarketContext)
-  if (!context) throw new Error('useMarkets must be used within MarketProvider')
+export function useDocuments() {
+  const context = useContext(DocumentContext)
+  if (!context) throw new Error("useDocuments must be used within DocumentProvider")
   return context
 }
 ```
@@ -283,87 +547,68 @@ export function useMarkets() {
 ### Memoization
 
 ```typescript
-// ✅ useMemo for expensive computations
-const sortedMarkets = useMemo(() => {
-  return markets.sort((a, b) => b.volume - a.volume)
-}, [markets])
+"use client"
 
-// ✅ useCallback for functions passed to children
+// useMemo for expensive computations
+const sortedDocuments = useMemo(() => {
+  return [...documents].sort((a, b) => b.updatedAt - a.updatedAt)
+}, [documents])
+
+// useCallback for functions passed to children
 const handleSearch = useCallback((query: string) => {
   setSearchQuery(query)
 }, [])
-
-// ✅ React.memo for pure components
-export const MarketCard = React.memo<MarketCardProps>(({ market }) => {
-  return (
-    <div className="market-card">
-      <h3>{market.name}</h3>
-      <p>{market.description}</p>
-    </div>
-  )
-})
 ```
 
-### Code Splitting & Lazy Loading
+### Dynamic Imports (Next.js)
 
 ```typescript
-import { lazy, Suspense } from 'react'
+import dynamic from "next/dynamic"
 
-// ✅ Lazy load heavy components
-const HeavyChart = lazy(() => import('./HeavyChart'))
-const ThreeJsBackground = lazy(() => import('./ThreeJsBackground'))
+// Heavy client-only components
+const Editor = dynamic(() => import("@/components/Editor"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[500px] w-full" />,
+})
 
-export function Dashboard() {
-  return (
-    <div>
-      <Suspense fallback={<ChartSkeleton />}>
-        <HeavyChart data={data} />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <ThreeJsBackground />
-      </Suspense>
-    </div>
-  )
+export default function WritePage() {
+  return <Editor />
 }
 ```
 
 ### Virtualization for Long Lists
 
 ```typescript
-import { useVirtualizer } from '@tanstack/react-virtual'
+"use client"
 
-export function VirtualMarketList({ markets }: { markets: Market[] }) {
+import { useVirtualizer } from "@tanstack/react-virtual"
+
+export function VirtualDocumentList({ documents }: { documents: Document[] }) {
   const parentRef = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
-    count: markets.length,
+    count: documents.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 100,  // Estimated row height
-    overscan: 5  // Extra items to render
+    estimateSize: () => 80,
+    overscan: 5,
   })
 
   return (
-    <div ref={parentRef} style={{ height: '600px', overflow: 'auto' }}>
+    <div ref={parentRef} className="h-[600px] overflow-auto">
       <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          position: 'relative'
-        }}
+        className="relative w-full"
+        style={{ height: `${virtualizer.getTotalSize()}px` }}
       >
         {virtualizer.getVirtualItems().map(virtualRow => (
           <div
             key={virtualRow.index}
+            className="absolute left-0 top-0 w-full"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
               height: `${virtualRow.size}px`,
-              transform: `translateY(${virtualRow.start}px)`
+              transform: `translateY(${virtualRow.start}px)`,
             }}
           >
-            <MarketCard market={markets[virtualRow.index]} />
+            <DocumentCard document={documents[virtualRow.index]} />
           </div>
         ))}
       </div>
@@ -372,260 +617,78 @@ export function VirtualMarketList({ markets }: { markets: Market[] }) {
 }
 ```
 
-## Form Handling Patterns
-
-### Controlled Form with Validation
-
-```typescript
-interface FormData {
-  name: string
-  description: string
-  endDate: string
-}
-
-interface FormErrors {
-  name?: string
-  description?: string
-  endDate?: string
-}
-
-export function CreateMarketForm() {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    endDate: ''
-  })
-
-  const [errors, setErrors] = useState<FormErrors>({})
-
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
-    } else if (formData.name.length > 200) {
-      newErrors.name = 'Name must be under 200 characters'
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required'
-    }
-
-    if (!formData.endDate) {
-      newErrors.endDate = 'End date is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validate()) return
-
-    try {
-      await createMarket(formData)
-      // Success handling
-    } catch (error) {
-      // Error handling
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        value={formData.name}
-        onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-        placeholder="Market name"
-      />
-      {errors.name && <span className="error">{errors.name}</span>}
-
-      {/* Other fields */}
-
-      <button type="submit">Create Market</button>
-    </form>
-  )
-}
-```
-
-## Error Boundary Pattern
-
-```typescript
-interface ErrorBoundaryState {
-  hasError: boolean
-  error: Error | null
-}
-
-export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  ErrorBoundaryState
-> {
-  state: ErrorBoundaryState = {
-    hasError: false,
-    error: null
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error boundary caught:', error, errorInfo)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="error-fallback">
-          <h2>Something went wrong</h2>
-          <p>{this.state.error?.message}</p>
-          <button onClick={() => this.setState({ hasError: false })}>
-            Try again
-          </button>
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
-}
-
-// Usage
-<ErrorBoundary>
-  <App />
-</ErrorBoundary>
-```
-
 ## Animation Patterns
 
-### Framer Motion Animations
+### Framer Motion with shadcn/ui
 
 ```typescript
-import { motion, AnimatePresence } from 'framer-motion'
+"use client"
 
-// ✅ List animations
-export function AnimatedMarketList({ markets }: { markets: Market[] }) {
+import { motion, AnimatePresence } from "framer-motion"
+import { Card } from "@/components/ui/card"
+
+export function AnimatedList({ items }: { items: Item[] }) {
   return (
     <AnimatePresence>
-      {markets.map(market => (
+      {items.map(item => (
         <motion.div
-          key={market.id}
+          key={item.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.2 }}
         >
-          <MarketCard market={market} />
+          <Card className="p-4">{item.title}</Card>
         </motion.div>
       ))}
     </AnimatePresence>
   )
 }
-
-// ✅ Modal animations
-export function Modal({ isOpen, onClose, children }: ModalProps) {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.div
-            className="modal-content"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          >
-            {children}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  )
-}
 ```
 
-## Accessibility Patterns
+## File Organization
 
-### Keyboard Navigation
+```
+app/
+├── layout.tsx              # Root layout (Server Component)
+├── page.tsx                # Home page
+├── loading.tsx             # Global loading UI
+├── error.tsx               # Global error UI
+├── (auth)/                 # Route group (no URL segment)
+│   ├── login/page.tsx
+│   └── register/page.tsx
+├── dashboard/
+│   ├── layout.tsx          # Nested layout
+│   ├── page.tsx
+│   └── loading.tsx
+├── api/                    # Route Handlers
+│   └── articles/
+│       └── route.ts
+└── actions.ts              # Server Actions
 
-```typescript
-export function Dropdown({ options, onSelect }: DropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [activeIndex, setActiveIndex] = useState(0)
+components/
+├── ui/                     # shadcn/ui components (auto-generated)
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── dialog.tsx
+│   └── ...
+├── editor/                 # Feature-specific components
+│   ├── Editor.tsx
+│   └── Toolbar.tsx
+└── layout/
+    ├── Header.tsx
+    └── Sidebar.tsx
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault()
-        setActiveIndex(i => Math.min(i + 1, options.length - 1))
-        break
-      case 'ArrowUp':
-        e.preventDefault()
-        setActiveIndex(i => Math.max(i - 1, 0))
-        break
-      case 'Enter':
-        e.preventDefault()
-        onSelect(options[activeIndex])
-        setIsOpen(false)
-        break
-      case 'Escape':
-        setIsOpen(false)
-        break
-    }
-  }
+lib/
+├── utils.ts                # cn() and helpers
+└── constants.ts
 
-  return (
-    <div
-      role="combobox"
-      aria-expanded={isOpen}
-      aria-haspopup="listbox"
-      onKeyDown={handleKeyDown}
-    >
-      {/* Dropdown implementation */}
-    </div>
-  )
-}
+hooks/
+├── useDebounce.ts
+└── useToggle.ts
+
+types/
+└── index.ts
 ```
 
-### Focus Management
-
-```typescript
-export function Modal({ isOpen, onClose, children }: ModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null)
-  const previousFocusRef = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    if (isOpen) {
-      // Save currently focused element
-      previousFocusRef.current = document.activeElement as HTMLElement
-
-      // Focus modal
-      modalRef.current?.focus()
-    } else {
-      // Restore focus when closing
-      previousFocusRef.current?.focus()
-    }
-  }, [isOpen])
-
-  return isOpen ? (
-    <div
-      ref={modalRef}
-      role="dialog"
-      aria-modal="true"
-      tabIndex={-1}
-      onKeyDown={e => e.key === 'Escape' && onClose()}
-    >
-      {children}
-    </div>
-  ) : null
-}
-```
-
-**Remember**: Modern frontend patterns enable maintainable, performant user interfaces. Choose patterns that fit your project complexity.
+**Remember**: Use shadcn/ui components instead of building from scratch. Default to Server Components; add "use client" only when interactivity is needed. Leverage Next.js built-in optimizations (Image, Link, Font) for performance.

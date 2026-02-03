@@ -263,30 +263,51 @@ res.setHeader('Set-Cookie',
 
 ### 7. Rate Limiting
 
-#### API Rate Limiting
+#### Next.js Middleware Rate Limiting
 ```typescript
-import rateLimit from 'express-rate-limit'
+// middleware.ts
+import { NextRequest, NextResponse } from "next/server"
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
-  message: 'Too many requests'
-})
+const rateLimit = new Map<string, { count: number; resetTime: number }>()
 
-// Apply to routes
-app.use('/api/', limiter)
-```
+function getRateLimitResult(ip: string, maxRequests: number, windowMs: number) {
+  const now = Date.now()
+  const entry = rateLimit.get(ip)
 
-#### Expensive Operations
-```typescript
-// Aggressive rate limiting for searches
-const searchLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // 10 requests per minute
-  message: 'Too many search requests'
-})
+  if (!entry || now > entry.resetTime) {
+    rateLimit.set(ip, { count: 1, resetTime: now + windowMs })
+    return { allowed: true, remaining: maxRequests - 1 }
+  }
 
-app.use('/api/search', searchLimiter)
+  if (entry.count >= maxRequests) {
+    return { allowed: false, remaining: 0 }
+  }
+
+  entry.count++
+  return { allowed: true, remaining: maxRequests - entry.count }
+}
+
+export function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+    const { allowed, remaining } = getRateLimitResult(ip, 100, 60_000)
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 }
+      )
+    }
+
+    const response = NextResponse.next()
+    response.headers.set("X-RateLimit-Remaining", String(remaining))
+    return response
+  }
+}
+
+export const config = {
+  matcher: "/api/:path*",
+}
 ```
 
 #### Verification Steps
@@ -334,60 +355,7 @@ catch (error) {
 - [ ] Detailed errors only in server logs
 - [ ] No stack traces exposed to users
 
-### 9. Blockchain Security (Solana)
-
-#### Wallet Verification
-```typescript
-import { verify } from '@solana/web3.js'
-
-async function verifyWalletOwnership(
-  publicKey: string,
-  signature: string,
-  message: string
-) {
-  try {
-    const isValid = verify(
-      Buffer.from(message),
-      Buffer.from(signature, 'base64'),
-      Buffer.from(publicKey, 'base64')
-    )
-    return isValid
-  } catch (error) {
-    return false
-  }
-}
-```
-
-#### Transaction Verification
-```typescript
-async function verifyTransaction(transaction: Transaction) {
-  // Verify recipient
-  if (transaction.to !== expectedRecipient) {
-    throw new Error('Invalid recipient')
-  }
-
-  // Verify amount
-  if (transaction.amount > maxAmount) {
-    throw new Error('Amount exceeds limit')
-  }
-
-  // Verify user has sufficient balance
-  const balance = await getBalance(transaction.from)
-  if (balance < transaction.amount) {
-    throw new Error('Insufficient balance')
-  }
-
-  return true
-}
-```
-
-#### Verification Steps
-- [ ] Wallet signatures verified
-- [ ] Transaction details validated
-- [ ] Balance checks before transactions
-- [ ] No blind transaction signing
-
-### 10. Dependency Security
+### 9. Dependency Security
 
 #### Regular Updates
 ```bash
@@ -480,7 +448,6 @@ Before ANY production deployment:
 - [ ] **Row Level Security**: Enabled in Supabase
 - [ ] **CORS**: Properly configured
 - [ ] **File Uploads**: Validated (size, type)
-- [ ] **Wallet Signatures**: Verified (if blockchain)
 
 ## Resources
 

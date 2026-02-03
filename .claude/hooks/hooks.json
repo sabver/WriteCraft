@@ -33,11 +33,11 @@
         "description": "Pause before git push to review changes"
       },
       {
-        "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(md|txt)$\" && !(tool_input.file_path matches \"README\\\\.md|CLAUDE\\\\.md|AGENTS\\\\.md|CONTRIBUTING\\\\.md\")",
+        "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(md|txt)$\" && !(tool_input.file_path matches \"README\\\\.md|CLAUDE\\\\.md|AGENTS\\\\.md|CONTRIBUTING\\\\.md|specs/\")",
         "hooks": [
           {
             "type": "command",
-            "command": "#!/bin/bash\n# Block creation of unnecessary documentation files\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // \"\"')\n\nif [[ \"$file_path\" =~ \\.(md|txt)$ ]] && [[ ! \"$file_path\" =~ (README|CLAUDE|AGENTS|CONTRIBUTING)\\.md$ ]]; then\n  echo \"[Hook] BLOCKED: Unnecessary documentation file creation\" >&2\n  echo \"[Hook] File: $file_path\" >&2\n  echo \"[Hook] Use README.md for documentation instead\" >&2\n  exit 1\nfi\n\necho \"$input\""
+            "command": "#!/bin/bash\n# Block creation of unnecessary documentation files\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // \"\"')\n\nif [[ \"$file_path\" =~ \\.(md|txt)$ ]] && [[ ! \"$file_path\" =~ (README|CLAUDE|AGENTS|CONTRIBUTING)\\.md$ ]] && [[ ! \"$file_path\" =~ specs/ ]]; then\n  echo \"[Hook] BLOCKED: Unnecessary documentation file creation\" >&2\n  echo \"[Hook] File: $file_path\" >&2\n  echo \"[Hook] Use README.md for documentation instead\" >&2\n  exit 1\nfi\n\necho \"$input\""
           }
         ],
         "description": "Block creation of random .md files - keeps docs consolidated"
@@ -69,7 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "#!/bin/bash\n# Run TypeScript check after editing TS files\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // \"\"')\n\nif [ -n \"$file_path\" ] && [ -f \"$file_path\" ]; then\n  dir=$(dirname \"$file_path\")\n  project_root=\"$dir\"\n  while [ \"$project_root\" != \"/\" ] && [ ! -f \"$project_root/package.json\" ]; do\n    project_root=$(dirname \"$project_root\")\n  done\n  \n  if [ -f \"$project_root/tsconfig.json\" ]; then\n    cd \"$project_root\" && npx tsc --noEmit --pretty false 2>&1 | grep \"$file_path\" | head -10 >&2 || true\n  fi\nfi\n\necho \"$input\""
+            "command": "#!/bin/bash\n# Run TypeScript check after editing TS files\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // \"\"')\n\nif [ -n \"$file_path\" ] && [ -f \"$file_path\" ]; then\n  dir=$(dirname \"$file_path\")\n  project_root=\"$dir\"\n  while [ \"$project_root\" != \"/\" ] && [ ! -f \"$project_root/package.json\" ]; do\n    project_root=$(dirname \"$project_root\")\n  done\n  \n  if [ -f \"$project_root/tsconfig.json\" ]; then\n    cd \"$project_root\" && pnpm exec tsc --noEmit --pretty false 2>&1 | grep \"$file_path\" | head -10 >&2 || true\n  fi\nfi\n\necho \"$input\""
           }
         ],
         "description": "TypeScript check after editing .ts/.tsx files"

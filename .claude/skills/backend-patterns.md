@@ -1,304 +1,277 @@
 ---
 name: backend-patterns
-description: Backend architecture patterns, API design, database optimization, and server-side best practices for Node.js, Express, and Next.js API routes.
+description: Backend architecture patterns for Next.js App Router, Route Handlers, Server Actions, middleware, database optimization, and server-side best practices.
 ---
 
 # Backend Development Patterns
 
-Backend architecture patterns and best practices for scalable server-side applications.
+Backend patterns for Next.js App Router with TypeScript.
 
-## API Design Patterns
+## Route Handlers (app/api/)
 
-### RESTful API Structure
-
-```typescript
-// ✅ Resource-based URLs
-GET    /api/markets                 # List resources
-GET    /api/markets/:id             # Get single resource
-POST   /api/markets                 # Create resource
-PUT    /api/markets/:id             # Replace resource
-PATCH  /api/markets/:id             # Update resource
-DELETE /api/markets/:id             # Delete resource
-
-// ✅ Query parameters for filtering, sorting, pagination
-GET /api/markets?status=active&sort=volume&limit=20&offset=0
-```
-
-### Repository Pattern
+### RESTful Route Handler
 
 ```typescript
-// Abstract data access logic
-interface MarketRepository {
-  findAll(filters?: MarketFilters): Promise<Market[]>
-  findById(id: string): Promise<Market | null>
-  create(data: CreateMarketDto): Promise<Market>
-  update(id: string, data: UpdateMarketDto): Promise<Market>
-  delete(id: string): Promise<void>
-}
+// app/api/articles/route.ts
+import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 
-class SupabaseMarketRepository implements MarketRepository {
-  async findAll(filters?: MarketFilters): Promise<Market[]> {
-    let query = supabase.from('markets').select('*')
+const QuerySchema = z.object({
+  status: z.enum(["draft", "published", "archived"]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+})
 
-    if (filters?.status) {
-      query = query.eq('status', filters.status)
-    }
+export async function GET(request: NextRequest) {
+  try {
+    const params = Object.fromEntries(request.nextUrl.searchParams)
+    const { status, limit, offset } = QuerySchema.parse(params)
 
-    if (filters?.limit) {
-      query = query.limit(filters.limit)
-    }
-
-    const { data, error } = await query
-
-    if (error) throw new Error(error.message)
-    return data
-  }
-
-  // Other methods...
-}
-```
-
-### Service Layer Pattern
-
-```typescript
-// Business logic separated from data access
-class MarketService {
-  constructor(private marketRepo: MarketRepository) {}
-
-  async searchMarkets(query: string, limit: number = 10): Promise<Market[]> {
-    // Business logic
-    const embedding = await generateEmbedding(query)
-    const results = await this.vectorSearch(embedding, limit)
-
-    // Fetch full data
-    const markets = await this.marketRepo.findByIds(results.map(r => r.id))
-
-    // Sort by similarity
-    return markets.sort((a, b) => {
-      const scoreA = results.find(r => r.id === a.id)?.score || 0
-      const scoreB = results.find(r => r.id === b.id)?.score || 0
-      return scoreA - scoreB
+    const articles = await db.article.findMany({
+      where: status ? { status } : undefined,
+      take: limit,
+      skip: offset,
+      orderBy: { updatedAt: "desc" },
     })
-  }
 
-  private async vectorSearch(embedding: number[], limit: number) {
-    // Vector search implementation
-  }
-}
-```
+    const total = await db.article.count({
+      where: status ? { status } : undefined,
+    })
 
-### Middleware Pattern
-
-```typescript
-// Request/response processing pipeline
-export function withAuth(handler: NextApiHandler): NextApiHandler {
-  return async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '')
-
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
-
-    try {
-      const user = await verifyToken(token)
-      req.user = user
-      return handler(req, res)
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid token' })
-    }
+    return NextResponse.json({
+      success: true,
+      data: articles,
+      meta: { total, limit, offset },
+    })
+  } catch (error) {
+    return errorHandler(error)
   }
 }
 
-// Usage
-export default withAuth(async (req, res) => {
-  // Handler has access to req.user
+const CreateArticleSchema = z.object({
+  title: z.string().min(1).max(200),
+  content: z.string().min(1),
 })
-```
 
-## Database Patterns
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const validated = CreateArticleSchema.parse(body)
 
-### Query Optimization
+    const article = await db.article.create({ data: validated })
 
-```typescript
-// ✅ GOOD: Select only needed columns
-const { data } = await supabase
-  .from('markets')
-  .select('id, name, status, volume')
-  .eq('status', 'active')
-  .order('volume', { ascending: false })
-  .limit(10)
-
-// ❌ BAD: Select everything
-const { data } = await supabase
-  .from('markets')
-  .select('*')
-```
-
-### N+1 Query Prevention
-
-```typescript
-// ❌ BAD: N+1 query problem
-const markets = await getMarkets()
-for (const market of markets) {
-  market.creator = await getUser(market.creator_id)  // N queries
+    return NextResponse.json(
+      { success: true, data: article },
+      { status: 201 }
+    )
+  } catch (error) {
+    return errorHandler(error)
+  }
 }
-
-// ✅ GOOD: Batch fetch
-const markets = await getMarkets()
-const creatorIds = markets.map(m => m.creator_id)
-const creators = await getUsers(creatorIds)  // 1 query
-const creatorMap = new Map(creators.map(c => [c.id, c]))
-
-markets.forEach(market => {
-  market.creator = creatorMap.get(market.creator_id)
-})
 ```
 
-### Transaction Pattern
+### Dynamic Route Handler
 
 ```typescript
-async function createMarketWithPosition(
-  marketData: CreateMarketDto,
-  positionData: CreatePositionDto
+// app/api/articles/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server"
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  // Use Supabase transaction
-  const { data, error } = await supabase.rpc('create_market_with_position', {
-    market_data: marketData,
-    position_data: positionData
+  const article = await db.article.findUnique({
+    where: { id: params.id },
   })
 
-  if (error) throw new Error('Transaction failed')
-  return data
-}
-
-// SQL function in Supabase
-CREATE OR REPLACE FUNCTION create_market_with_position(
-  market_data jsonb,
-  position_data jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Start transaction automatically
-  INSERT INTO markets VALUES (market_data);
-  INSERT INTO positions VALUES (position_data);
-  RETURN jsonb_build_object('success', true);
-EXCEPTION
-  WHEN OTHERS THEN
-    -- Rollback happens automatically
-    RETURN jsonb_build_object('success', false, 'error', SQLERRM);
-END;
-$$;
-```
-
-## Caching Strategies
-
-### Redis Caching Layer
-
-```typescript
-class CachedMarketRepository implements MarketRepository {
-  constructor(
-    private baseRepo: MarketRepository,
-    private redis: RedisClient
-  ) {}
-
-  async findById(id: string): Promise<Market | null> {
-    // Check cache first
-    const cached = await this.redis.get(`market:${id}`)
-
-    if (cached) {
-      return JSON.parse(cached)
-    }
-
-    // Cache miss - fetch from database
-    const market = await this.baseRepo.findById(id)
-
-    if (market) {
-      // Cache for 5 minutes
-      await this.redis.setex(`market:${id}`, 300, JSON.stringify(market))
-    }
-
-    return market
+  if (!article) {
+    return NextResponse.json(
+      { success: false, error: "Article not found" },
+      { status: 404 }
+    )
   }
 
-  async invalidateCache(id: string): Promise<void> {
-    await this.redis.del(`market:${id}`)
+  return NextResponse.json({ success: true, data: article })
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json()
+    const article = await db.article.update({
+      where: { id: params.id },
+      data: body,
+    })
+    return NextResponse.json({ success: true, data: article })
+  } catch (error) {
+    return errorHandler(error)
   }
 }
-```
 
-### Cache-Aside Pattern
-
-```typescript
-async function getMarketWithCache(id: string): Promise<Market> {
-  const cacheKey = `market:${id}`
-
-  // Try cache
-  const cached = await redis.get(cacheKey)
-  if (cached) return JSON.parse(cached)
-
-  // Cache miss - fetch from DB
-  const market = await db.markets.findUnique({ where: { id } })
-
-  if (!market) throw new Error('Market not found')
-
-  // Update cache
-  await redis.setex(cacheKey, 300, JSON.stringify(market))
-
-  return market
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  await db.article.delete({ where: { id: params.id } })
+  return new NextResponse(null, { status: 204 })
 }
 ```
 
-## Error Handling Patterns
+## Server Actions
+
+### Form Actions
+
+```typescript
+// app/actions/article.ts
+"use server"
+
+import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
+import { z } from "zod"
+
+const ArticleSchema = z.object({
+  title: z.string().min(1).max(200),
+  content: z.string().min(1),
+})
+
+export async function createArticle(formData: FormData) {
+  const validated = ArticleSchema.parse({
+    title: formData.get("title"),
+    content: formData.get("content"),
+  })
+
+  const article = await db.article.create({ data: validated })
+
+  revalidatePath("/articles")
+  redirect(`/articles/${article.id}`)
+}
+
+export async function updateArticle(id: string, formData: FormData) {
+  const validated = ArticleSchema.partial().parse({
+    title: formData.get("title"),
+    content: formData.get("content"),
+  })
+
+  await db.article.update({ where: { id }, data: validated })
+  revalidatePath(`/articles/${id}`)
+}
+
+export async function deleteArticle(id: string) {
+  await db.article.delete({ where: { id } })
+  revalidatePath("/articles")
+  redirect("/articles")
+}
+```
+
+### Mutation Actions (non-form)
+
+```typescript
+// app/actions/like.ts
+"use server"
+
+import { revalidatePath } from "next/cache"
+
+export async function toggleLike(articleId: string, userId: string) {
+  const existing = await db.like.findUnique({
+    where: { articleId_userId: { articleId, userId } },
+  })
+
+  if (existing) {
+    await db.like.delete({
+      where: { articleId_userId: { articleId, userId } },
+    })
+  } else {
+    await db.like.create({ data: { articleId, userId } })
+  }
+
+  revalidatePath(`/articles/${articleId}`)
+}
+```
+
+## Next.js Middleware
+
+### Auth + Rate Limiting Middleware
+
+```typescript
+// middleware.ts
+import { NextRequest, NextResponse } from "next/server"
+
+const protectedPaths = ["/dashboard", "/api/articles"]
+const publicPaths = ["/login", "/register", "/api/auth"]
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Skip public paths
+  if (publicPaths.some(p => pathname.startsWith(p))) {
+    return NextResponse.next()
+  }
+
+  // Check auth for protected paths
+  if (protectedPaths.some(p => pathname.startsWith(p))) {
+    const token = request.cookies.get("session")?.value
+
+    if (!token) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
+  }
+
+  // Add security headers
+  const response = NextResponse.next()
+  response.headers.set("X-Frame-Options", "DENY")
+  response.headers.set("X-Content-Type-Options", "nosniff")
+  return response
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+}
+```
+
+## Error Handling
 
 ### Centralized Error Handler
 
 ```typescript
-class ApiError extends Error {
+// lib/errors.ts
+import { NextResponse } from "next/server"
+import { z } from "zod"
+
+export class ApiError extends Error {
   constructor(
     public statusCode: number,
-    public message: string,
-    public isOperational = true
+    message: string,
   ) {
     super(message)
-    Object.setPrototypeOf(this, ApiError.prototype)
   }
 }
 
-export function errorHandler(error: unknown, req: Request): Response {
+export function errorHandler(error: unknown): NextResponse {
   if (error instanceof ApiError) {
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: error.statusCode })
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: error.statusCode }
+    )
   }
 
   if (error instanceof z.ZodError) {
-    return NextResponse.json({
-      success: false,
-      error: 'Validation failed',
-      details: error.errors
-    }, { status: 400 })
+    return NextResponse.json(
+      { success: false, error: "Validation failed", details: error.errors },
+      { status: 400 }
+    )
   }
 
-  // Log unexpected errors
-  console.error('Unexpected error:', error)
+  console.error("Unexpected error:", error)
 
-  return NextResponse.json({
-    success: false,
-    error: 'Internal server error'
-  }, { status: 500 })
-}
-
-// Usage
-export async function GET(request: Request) {
-  try {
-    const data = await fetchData()
-    return NextResponse.json({ success: true, data })
-  } catch (error) {
-    return errorHandler(error, request)
-  }
+  return NextResponse.json(
+    { success: false, error: "Internal server error" },
+    { status: 500 }
+  )
 }
 ```
 
@@ -318,7 +291,6 @@ async function fetchWithRetry<T>(
       lastError = error as Error
 
       if (i < maxRetries - 1) {
-        // Exponential backoff: 1s, 2s, 4s
         const delay = Math.pow(2, i) * 1000
         await new Promise(resolve => setTimeout(resolve, delay))
       }
@@ -327,256 +299,267 @@ async function fetchWithRetry<T>(
 
   throw lastError!
 }
-
-// Usage
-const data = await fetchWithRetry(() => fetchFromAPI())
 ```
 
-## Authentication & Authorization
+## Data Access Patterns
 
-### JWT Token Validation
+### Repository Pattern
 
 ```typescript
-import jwt from 'jsonwebtoken'
-
-interface JWTPayload {
-  userId: string
-  email: string
-  role: 'admin' | 'user'
+// lib/repositories/article.ts
+interface ArticleRepository {
+  findAll(filters?: ArticleFilters): Promise<Article[]>
+  findById(id: string): Promise<Article | null>
+  create(data: CreateArticleDto): Promise<Article>
+  update(id: string, data: UpdateArticleDto): Promise<Article>
+  delete(id: string): Promise<void>
 }
 
-export function verifyToken(token: string): JWTPayload {
+class PrismaArticleRepository implements ArticleRepository {
+  async findAll(filters?: ArticleFilters): Promise<Article[]> {
+    return db.article.findMany({
+      where: {
+        status: filters?.status,
+        authorId: filters?.authorId,
+      },
+      take: filters?.limit ?? 20,
+      skip: filters?.offset ?? 0,
+      orderBy: { updatedAt: "desc" },
+    })
+  }
+
+  async findById(id: string): Promise<Article | null> {
+    return db.article.findUnique({ where: { id } })
+  }
+
+  async create(data: CreateArticleDto): Promise<Article> {
+    return db.article.create({ data })
+  }
+
+  async update(id: string, data: UpdateArticleDto): Promise<Article> {
+    return db.article.update({ where: { id }, data })
+  }
+
+  async delete(id: string): Promise<void> {
+    await db.article.delete({ where: { id } })
+  }
+}
+```
+
+### Service Layer Pattern
+
+```typescript
+// lib/services/article.ts
+class ArticleService {
+  constructor(private repo: ArticleRepository) {}
+
+  async publish(id: string): Promise<Article> {
+    const article = await this.repo.findById(id)
+
+    if (!article) throw new ApiError(404, "Article not found")
+    if (article.status === "published") throw new ApiError(400, "Already published")
+
+    return this.repo.update(id, {
+      status: "published",
+      publishedAt: new Date(),
+    })
+  }
+
+  async search(query: string, limit = 10): Promise<Article[]> {
+    // Full-text search or other business logic
+    return this.repo.findAll({ query, limit })
+  }
+}
+```
+
+### N+1 Query Prevention
+
+```typescript
+// Include relations in a single query
+const articles = await db.article.findMany({
+  include: {
+    author: { select: { id: true, name: true, avatar: true } },
+    _count: { select: { likes: true, comments: true } },
+  },
+})
+
+// Or batch fetch with Map
+const articles = await getArticles()
+const authorIds = [...new Set(articles.map(a => a.authorId))]
+const authors = await db.user.findMany({ where: { id: { in: authorIds } } })
+const authorMap = new Map(authors.map(a => [a.id, a]))
+```
+
+## Data Fetching in Server Components
+
+### Direct DB Access
+
+```typescript
+// app/articles/page.tsx (Server Component)
+export default async function ArticlesPage() {
+  const articles = await db.article.findMany({
+    where: { status: "published" },
+    orderBy: { publishedAt: "desc" },
+    take: 20,
+  })
+
+  return <ArticleList articles={articles} />
+}
+```
+
+### Parallel Data Fetching
+
+```typescript
+// app/dashboard/page.tsx
+export default async function DashboardPage() {
+  // Fetch in parallel, not sequentially
+  const [articles, stats, recentActivity] = await Promise.all([
+    db.article.findMany({ take: 5, orderBy: { updatedAt: "desc" } }),
+    getArticleStats(),
+    getRecentActivity(),
+  ])
+
+  return (
+    <>
+      <StatsCards stats={stats} />
+      <RecentArticles articles={articles} />
+      <ActivityFeed activity={recentActivity} />
+    </>
+  )
+}
+```
+
+### Caching with unstable_cache
+
+```typescript
+import { unstable_cache } from "next/cache"
+
+const getCachedArticle = unstable_cache(
+  async (id: string) => {
+    return db.article.findUnique({ where: { id } })
+  },
+  ["article"],
+  { revalidate: 60, tags: ["articles"] }
+)
+
+// Invalidate with revalidateTag
+import { revalidateTag } from "next/cache"
+
+export async function updateArticle(id: string, data: UpdateArticleDto) {
+  await db.article.update({ where: { id }, data })
+  revalidateTag("articles")
+}
+```
+
+## Authentication
+
+### Auth Helper for Route Handlers
+
+```typescript
+// lib/auth.ts
+import { cookies } from "next/headers"
+
+export async function getSession() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("session")?.value
+
+  if (!token) return null
+
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload
+    const payload = await verifyToken(token)
     return payload
-  } catch (error) {
-    throw new ApiError(401, 'Invalid token')
+  } catch {
+    return null
   }
 }
 
-export async function requireAuth(request: Request) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '')
+export async function requireAuth() {
+  const session = await getSession()
 
-  if (!token) {
-    throw new ApiError(401, 'Missing authorization token')
+  if (!session) {
+    throw new ApiError(401, "Unauthorized")
   }
 
-  return verifyToken(token)
+  return session
 }
 
-// Usage in API route
-export async function GET(request: Request) {
-  const user = await requireAuth(request)
-
-  const data = await getDataForUser(user.userId)
-
+// Usage in Route Handler
+export async function GET() {
+  const session = await requireAuth()
+  const data = await getDataForUser(session.userId)
   return NextResponse.json({ success: true, data })
+}
+
+// Usage in Server Component
+export default async function DashboardPage() {
+  const session = await getSession()
+
+  if (!session) {
+    redirect("/login")
+  }
+
+  return <Dashboard userId={session.userId} />
 }
 ```
 
 ### Role-Based Access Control
 
 ```typescript
-type Permission = 'read' | 'write' | 'delete' | 'admin'
+type Permission = "read" | "write" | "delete" | "admin"
 
-interface User {
-  id: string
-  role: 'admin' | 'moderator' | 'user'
+const rolePermissions: Record<string, Permission[]> = {
+  admin: ["read", "write", "delete", "admin"],
+  editor: ["read", "write", "delete"],
+  author: ["read", "write"],
+  viewer: ["read"],
 }
 
-const rolePermissions: Record<User['role'], Permission[]> = {
-  admin: ['read', 'write', 'delete', 'admin'],
-  moderator: ['read', 'write', 'delete'],
-  user: ['read', 'write']
-}
+export async function requirePermission(permission: Permission) {
+  const session = await requireAuth()
 
-export function hasPermission(user: User, permission: Permission): boolean {
-  return rolePermissions[user.role].includes(permission)
-}
-
-export function requirePermission(permission: Permission) {
-  return async (request: Request) => {
-    const user = await requireAuth(request)
-
-    if (!hasPermission(user, permission)) {
-      throw new ApiError(403, 'Insufficient permissions')
-    }
-
-    return user
-  }
-}
-
-// Usage
-export const DELETE = requirePermission('delete')(async (request: Request) => {
-  // Handler with permission check
-})
-```
-
-## Rate Limiting
-
-### Simple In-Memory Rate Limiter
-
-```typescript
-class RateLimiter {
-  private requests = new Map<string, number[]>()
-
-  async checkLimit(
-    identifier: string,
-    maxRequests: number,
-    windowMs: number
-  ): Promise<boolean> {
-    const now = Date.now()
-    const requests = this.requests.get(identifier) || []
-
-    // Remove old requests outside window
-    const recentRequests = requests.filter(time => now - time < windowMs)
-
-    if (recentRequests.length >= maxRequests) {
-      return false  // Rate limit exceeded
-    }
-
-    // Add current request
-    recentRequests.push(now)
-    this.requests.set(identifier, recentRequests)
-
-    return true
-  }
-}
-
-const limiter = new RateLimiter()
-
-export async function GET(request: Request) {
-  const ip = request.headers.get('x-forwarded-for') || 'unknown'
-
-  const allowed = await limiter.checkLimit(ip, 100, 60000)  // 100 req/min
-
-  if (!allowed) {
-    return NextResponse.json({
-      error: 'Rate limit exceeded'
-    }, { status: 429 })
+  const permissions = rolePermissions[session.role] ?? []
+  if (!permissions.includes(permission)) {
+    throw new ApiError(403, "Insufficient permissions")
   }
 
-  // Continue with request
+  return session
 }
 ```
 
-## Background Jobs & Queues
-
-### Simple Queue Pattern
+## Structured Logging
 
 ```typescript
-class JobQueue<T> {
-  private queue: T[] = []
-  private processing = false
+// lib/logger.ts
+type LogLevel = "info" | "warn" | "error"
 
-  async add(job: T): Promise<void> {
-    this.queue.push(job)
-
-    if (!this.processing) {
-      this.process()
-    }
-  }
-
-  private async process(): Promise<void> {
-    this.processing = true
-
-    while (this.queue.length > 0) {
-      const job = this.queue.shift()!
-
-      try {
-        await this.execute(job)
-      } catch (error) {
-        console.error('Job failed:', error)
-      }
-    }
-
-    this.processing = false
-  }
-
-  private async execute(job: T): Promise<void> {
-    // Job execution logic
-  }
-}
-
-// Usage for indexing markets
-interface IndexJob {
-  marketId: string
-}
-
-const indexQueue = new JobQueue<IndexJob>()
-
-export async function POST(request: Request) {
-  const { marketId } = await request.json()
-
-  // Add to queue instead of blocking
-  await indexQueue.add({ marketId })
-
-  return NextResponse.json({ success: true, message: 'Job queued' })
-}
-```
-
-## Logging & Monitoring
-
-### Structured Logging
-
-```typescript
 interface LogContext {
-  userId?: string
   requestId?: string
-  method?: string
-  path?: string
+  userId?: string
   [key: string]: unknown
 }
 
-class Logger {
-  log(level: 'info' | 'warn' | 'error', message: string, context?: LogContext) {
-    const entry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      ...context
-    }
+function log(level: LogLevel, message: string, context?: LogContext) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...context,
+  }
 
+  // Use console.error for warn/error to separate streams
+  if (level === "error" || level === "warn") {
+    console.error(JSON.stringify(entry))
+  } else {
     console.log(JSON.stringify(entry))
-  }
-
-  info(message: string, context?: LogContext) {
-    this.log('info', message, context)
-  }
-
-  warn(message: string, context?: LogContext) {
-    this.log('warn', message, context)
-  }
-
-  error(message: string, error: Error, context?: LogContext) {
-    this.log('error', message, {
-      ...context,
-      error: error.message,
-      stack: error.stack
-    })
   }
 }
 
-const logger = new Logger()
-
-// Usage
-export async function GET(request: Request) {
-  const requestId = crypto.randomUUID()
-
-  logger.info('Fetching markets', {
-    requestId,
-    method: 'GET',
-    path: '/api/markets'
-  })
-
-  try {
-    const markets = await fetchMarkets()
-    return NextResponse.json({ success: true, data: markets })
-  } catch (error) {
-    logger.error('Failed to fetch markets', error as Error, { requestId })
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
-  }
+export const logger = {
+  info: (message: string, context?: LogContext) => log("info", message, context),
+  warn: (message: string, context?: LogContext) => log("warn", message, context),
+  error: (message: string, error: Error, context?: LogContext) =>
+    log("error", message, { ...context, error: error.message, stack: error.stack }),
 }
 ```
 
-**Remember**: Backend patterns enable scalable, maintainable server-side applications. Choose patterns that fit your complexity level.
+**Remember**: Use Route Handlers for API endpoints, Server Actions for form mutations, and direct DB access in Server Components. Validate all inputs with Zod. Handle errors centrally.
