@@ -1,0 +1,384 @@
+# ============================================================
+# STITCH TEMPLATE SLOTS (UI prototype generation)
+# ============================================================
+# Multi-page: 4 distinct pages identified from the spec
+# ============================================================
+
+# ---- PAGE 1: Home / Scene Selection ----
+stitch_page_1:
+  variant_count: "3"
+  product_name: "WriteCraft"
+  page_name: "Home / Scene Selection"
+  target_users: "English learners practicing translation writing"
+  user_goal: "Choose a translation practice scene (Interview or Daily) and start a new session"
+  requirement: |
+    - Two scene cards: Interview Scene and Daily Scene
+    - Interview Scene: requires detailed context (position, company, interview type); suited for paragraph-level practice; emphasizes professionalism
+    - Daily Scene: context is optional/simplified (setting, formality); suited for quick fragmented expressions; emphasizes naturalness
+    - Quick-access entry point for Daily Scene ("Quick Input")
+    - Navigation to History and Flashcard Review
+  page_type: "landing"  # inferred
+  navigation_structure: "top Navbar with logo, nav_items, and user menu"  # inferred
+  nav_items: "Home, History, Review, Settings"  # inferred — Settings for flashcard preferences
+  page_sections: |
+    Navbar → Hero header (app title + tagline) → Scene card grid (2 cards: Interview / Daily) → Quick Input shortcut button → Recent history preview (optional)
+  responsive_rules: "<768px: stack scene cards vertically; hero text smaller; pin Quick Input CTA at bottom"  # inferred
+  component_list: "Card, Button, Badge, Skeleton, Separator"
+  table_definition: "N/A"
+  form_fields: "N/A"
+  interactions: "Click Interview card → navigate to /interview/input; Click Daily card → navigate to /daily/input; Click Quick Input → navigate to /daily/input with simplified mode; Click Review badge → navigate to /review"
+  loading_skeleton_spec: "2 Card skeletons in grid layout + Navbar skeleton"  # inferred
+  empty_state_spec: "N/A — landing page always has content"
+  error_state_spec: "Alert banner with retry button if recent history fails to load"  # inferred
+  disabled_state_spec: "N/A"
+  locale: "en-US"  # inferred — app UI in English since users are learning English
+  copy_tone: "friendly and encouraging"  # inferred — learning tool for English learners
+  key_copy: |
+    Hero title: "Practice Your English Translation"
+    Hero subtitle: "Turn everyday language into fluent English"
+    Interview card title: "Interview Scene"
+    Interview card desc: "Practice professional translation with detailed context"
+    Daily card title: "Daily Scene"
+    Daily card desc: "Quick capture of everyday expressions"
+    Quick Input CTA: "Quick Input"
+    Review badge: "Cards due today"
+  theme: "light"  # inferred
+  primary_color_token_hint: "primary = blue-600 (interview accent), secondary = green-600 (daily accent)"  # inferred
+  typography_pref: "Inter for headings, system font stack for body"  # inferred
+  radius_shadow_pref: "rounded-xl cards with shadow-sm, elevated on hover with shadow-md"  # inferred
+  density_pref: "comfortable"  # inferred
+
+# ---- PAGE 2: Translation Workspace (Interview + Daily shared layout) ----
+stitch_page_2:
+  variant_count: "3"
+  product_name: "WriteCraft"
+  page_name: "Translation Workspace"
+  target_users: "English learners practicing translation writing"
+  user_goal: "Enter native language source text, translate it into English, receive AI sentence-by-sentence review, and optionally generate flashcards"
+  requirement: |
+    - Context input section (Interview: job description, company background, interview question type; Daily: optional setting + formality)
+    - Native language source input with highlighting
+    - Translation writing area (user can toggle on/off; may only want AI translation)
+    - AI Reference Translation display (optional, user decides)
+    - Submit for AI Review
+    - AI Review results: sentence-by-sentence with grammar errors, word choice suggestions, sentence structure improvements
+    - Side-by-side comparison of original and suggested revision
+    - Error type indicators with different colors/icons (grammar / word choice / structure)
+    - "Generate Flashcard" action after review with Paragraph/Sentence mode choice
+    - Scene-based defaults: Interview defaults to Paragraph mode, Daily defaults to Sentence mode
+  page_type: "form"
+  navigation_structure: "top Navbar with back button, scene indicator badge, nav_items"
+  nav_items: "Home, History, Review"
+  page_sections: |
+    Navbar with scene badge → Context input panel (collapsible) → Two-column layout: Left = Native language source (highlighted) / Right = English translation area → Toggle for AI Reference Translation → Submit CTA → AI Review results (sentence-by-sentence cards) → Generate Flashcard action bar
+  responsive_rules: "<768px: stack two-column layout vertically (source above, translation below); collapse context panel by default; pin Submit CTA at bottom; review results full-width"
+  component_list: "Card, Button, Badge, Form, Input, Textarea, Select, RadioGroup, Tabs, Dialog, Separator, Skeleton, Toast, Alert, Toggle"
+  table_definition: "N/A"
+  form_fields: |
+    Interview context:
+    - job_description | Textarea | required | min 10 chars | "" | "Describe the position you're interviewing for"
+    - company_background | Textarea | optional | max 500 chars | "" | "Brief company description"
+    - question_type | RadioGroup | required | one of [behavioral, technical] | "behavioral" | ""
+    Daily context:
+    - setting | Select | optional | one of [restaurant, store, social, travel, workplace, other] | "" | "Where is this conversation happening?"
+    - formality | RadioGroup | optional | one of [formal, informal] | "informal" | ""
+    Shared:
+    - source_text | Textarea | required | min 1 char | "" | "Enter native language text here"
+    - translation | Textarea | optional | min 1 char | "" | "Write your English translation here"
+  interactions: |
+    Fill context → enter source text (auto-highlighted) → toggle translation writing on/off → write translation → toggle AI reference translation visibility → click Submit → view sentence-by-sentence review → click individual review items to expand details → click "Generate Flashcard" → choose Paragraph/Sentence mode in Dialog → confirm generation → Toast success
+  loading_skeleton_spec: "Skeleton over review result area while AI processes; pulsing indicator on Submit button"
+  empty_state_spec: "Review section: 'Submit your translation to receive AI feedback' with arrow pointing to Submit button"  # inferred
+  error_state_spec: "Alert banner below Submit button: 'AI review failed. Please try again.' with Retry button; Toast for flashcard generation failure"
+  disabled_state_spec: "Submit button disabled until source_text is filled; Generate Flashcard disabled until review is complete"
+  locale: "en-US"  # inferred
+  copy_tone: "supportive and instructive"  # inferred
+  key_copy: |
+    Submit CTA: "Submit for Review"
+    Toggle translation: "I want to write my own translation"
+    Toggle AI ref: "Show AI Reference Translation"
+    Generate flashcard CTA: "Generate Flashcard"
+    Paragraph mode: "Paragraph Mode (full context)"
+    Sentence mode: "Sentence Mode (fine-grained)"
+    Grammar badge: "Grammar"
+    Word choice badge: "Word Choice"
+    Structure badge: "Structure"
+    Review loading: "AI is analyzing your translation..."
+    Flashcard success toast: "Flashcard generated successfully!"
+  theme: "light"  # inferred
+  primary_color_token_hint: "primary = blue-600; grammar error = red-500; word choice = amber-500; structure = violet-500"  # inferred
+  typography_pref: "Inter for headings, system font stack for body; monospace hint for source text highlight"  # inferred
+  radius_shadow_pref: "rounded-lg panels; review cards with left colored border (error type); shadow-sm default"  # inferred
+  density_pref: "comfortable"  # inferred
+
+# ---- PAGE 3: Flashcard Review ----
+stitch_page_3:
+  variant_count: "3"
+  product_name: "WriteCraft"
+  page_name: "Flashcard Review"
+  target_users: "English learners reviewing past translations with spaced repetition"
+  user_goal: "Review flashcards using SM-2 spaced repetition: see native language front, recall translation, flip to check, and self-rate quality (0-5)"
+  requirement: |
+    - Card front: native language source text; can expand to view context info
+    - Card back: user's translation, AI-revised reference (optional toggle), key feedback summary (optional toggle)
+    - Self-rating buttons (0-5) with labels: 0-2 forgotten, 3 barely, 4 hesitant, 5 effortless
+    - SM-2 algorithm: adjusts next review interval based on rating
+    - Card order: new cards first, then due cards, then random reinforcement cards
+    - Progress indicator: cards remaining, cards reviewed today
+    - Clean, focused interface
+  page_type: "wizard"  # inferred — step-through card review
+  navigation_structure: "minimal top bar with back button, progress indicator, and close"  # inferred
+  nav_items: "Back to Home, Progress counter"  # inferred
+  page_sections: |
+    Minimal top bar with progress → Flashcard (centered, large) with flip animation → Context expand toggle → Rating action bar (6 buttons: 0-5) → Session summary at end
+  responsive_rules: "<768px: card takes full width with padding; rating buttons stack as 2x3 grid; context panel as bottom Sheet"  # inferred
+  component_list: "Card, Button, Badge, Progress, Separator, Sheet, Toggle, Skeleton"
+  table_definition: "N/A"
+  form_fields: "N/A"
+  interactions: |
+    View card front (native text) → optionally expand context → mentally recall translation → tap/click to flip card → view back (translation + optional AI revision + feedback) → tap rating (0-5) → card animates out → next card slides in → at session end show summary
+  loading_skeleton_spec: "Single large Card skeleton centered with pulsing animation"  # inferred
+  empty_state_spec: "Illustration + 'No cards due for review. Great job!' + CTA 'Start a new translation'"  # inferred
+  error_state_spec: "Alert: 'Failed to load review cards' + Retry button"  # inferred
+  disabled_state_spec: "Rating buttons disabled until card is flipped"
+  locale: "en-US"  # inferred
+  copy_tone: "encouraging and minimal"  # inferred
+  key_copy: |
+    Flip CTA: "Tap to reveal"
+    Rating 0: "Forgot"
+    Rating 1: "Forgot"
+    Rating 2: "Forgot"
+    Rating 3: "Hard"
+    Rating 4: "Good"
+    Rating 5: "Easy"
+    Show context: "View Context"
+    Show AI revision: "Show AI Revision"
+    Show feedback: "Show Feedback"
+    Empty state: "No cards due for review. Great job!"
+    Session complete: "Session Complete"
+    Cards reviewed: "Cards reviewed today"
+  theme: "light"  # inferred
+  primary_color_token_hint: "primary = blue-600; rating-low (0-2) = red-500; rating-mid (3) = amber-500; rating-high (4-5) = green-500"  # inferred
+  typography_pref: "Inter, large text for card content (text-xl), clean sans-serif"  # inferred
+  radius_shadow_pref: "rounded-2xl card with shadow-lg for the flashcard; rating buttons rounded-lg"  # inferred
+  density_pref: "comfortable"  # inferred
+
+# ---- PAGE 4: History ----
+stitch_page_4:
+  variant_count: "3"
+  product_name: "WriteCraft"
+  page_name: "History"
+  target_users: "English learners reviewing and managing past translation exercises"
+  user_goal: "Browse, search, and filter past translation exercises; view details; redo translations or regenerate flashcards"
+  requirement: |
+    - History list in reverse chronological order
+    - Filter by scene type (Interview / Daily)
+    - Filter by date range
+    - Search functionality (text search across source and translation)
+    - Detail view: complete source text, user translation, AI review with highlighted key issues
+    - Redo operations: modify previous translation, re-request AI review, re-generate flashcards
+    - Statistics (expandable): total count, scene distribution, common error analysis, learning progress
+    - Each history item shows: timestamp, scene type badge, source preview, translation preview, flashcard link
+  page_type: "list"
+  navigation_structure: "top Navbar with nav_items; filter bar below Navbar"
+  nav_items: "Home, History, Review"
+  page_sections: |
+    Navbar → Filter bar (scene type tabs + date range picker + search input) → History card list (paginated) → Statistics summary panel (collapsible at top or bottom)
+  responsive_rules: "<768px: filter bar stacks vertically; search input full-width; history cards full-width; statistics panel as bottom Sheet; date picker as Dialog"  # inferred
+  component_list: "Card, Button, Badge, Input, Select, Tabs, Separator, Skeleton, Dialog, Sheet, DropdownMenu"  # inferred
+  table_definition: |
+    History card list: columns (date, scene_type badge, source_preview truncated, translation_preview truncated, status badge, actions dropdown)
+    Sorting: by date (default desc)
+    Pagination: 20 items per page, cursor-based  # inferred
+    Filters: scene_type (all/interview/daily), date_range, search text
+  form_fields: |
+    - search | Input | optional | "" | "" | "Search translations..."
+    - scene_filter | Tabs | optional | one of [all, interview, daily] | "all" | ""
+    - date_range | DateRangePicker | optional | valid date range | "" | "Select date range"
+  interactions: |
+    Type in search → auto-filter list; click scene tab → filter; pick date range → filter; click history card → navigate to detail view; in detail: click "Redo Translation" → open translation workspace pre-filled; click "Re-generate Flashcard" → Dialog to confirm; click "Re-request Review" → trigger AI review
+  loading_skeleton_spec: "4 Card skeletons stacked vertically with badge and text line placeholders"  # inferred
+  empty_state_spec: "Illustration + 'No translation history yet' + CTA 'Start your first translation'"
+  error_state_spec: "Alert banner: 'Failed to load history' + Retry button"  # inferred
+  disabled_state_spec: "Redo buttons disabled while AI review is in progress"  # inferred
+  locale: "en-US"  # inferred
+  copy_tone: "clean and informational"  # inferred
+  key_copy: |
+    Page title: "Translation History"
+    Search placeholder: "Search translations..."
+    Filter all: "All"
+    Filter interview: "Interview"
+    Filter daily: "Daily"
+    Empty state: "No translation history yet"
+    Empty CTA: "Start your first translation"
+    Redo: "Redo Translation"
+    Re-review: "Re-request Review"
+    Re-generate: "Re-generate Flashcard"
+    Detail title: "Translation Detail"
+  theme: "light"  # inferred
+  primary_color_token_hint: "primary = blue-600; interview badge = blue-100/blue-700; daily badge = green-100/green-700"  # inferred
+  typography_pref: "Inter, system font stack; preview text truncated with text-sm"  # inferred
+  radius_shadow_pref: "rounded-lg cards with shadow-sm; hover shadow-md transition"  # inferred
+  density_pref: "comfortable"  # inferred
+
+
+# ============================================================
+# AI STUDIO BUILD MODE SLOTS (convert prototype to code)
+# ============================================================
+
+stitch_export_source: "Stitch prototype export (HTML + design tokens)"  # inferred
+requirement: |
+  English Translation Writing Assistant — a web app for English learners to:
+  1. Select a practice scene (Interview with detailed context, or Daily with optional simplified context)
+  2. Enter native language text and translate it into English
+  3. Receive AI sentence-by-sentence review (grammar errors, word choice suggestions, structure improvements)
+  4. Generate flashcards (Paragraph mode or Sentence mode) from completed translations
+  5. Review flashcards using SM-2 spaced repetition algorithm
+  6. Browse translation history with search, filter, redo, and statistics
+
+routes: |
+  / (home — scene selection landing)
+  /interview/input (interview context + translation workspace)
+  /daily/input (daily context + translation workspace)
+  /review (flashcard review session)
+  /history (translation history list)
+  /history/[id] (translation detail view)
+  /settings (user preferences — flashcard defaults, display toggles)  # inferred
+
+brand_constraints: "Blue/green dual accent (blue for interview, green for daily); card-based layout; colored left-border badges for error types (red=grammar, amber=word choice, violet=structure); large centered flashcard with flip animation; clean encouraging tone"  # inferred
+
+nextjs_version: "15"  # inferred
+ts_strict: "true"
+cn_location: "lib/utils.ts"
+
+route_segments_need_states: "/review, /history, /history/[id], /interview/input, /daily/input"
+
+run_target: "pnpm dev"
+
+app_route_groups: |
+  (main)/
+    page.tsx                          # Home / scene selection
+    layout.tsx                        # Main layout with Navbar
+    interview/
+      input/
+        page.tsx                      # Interview context + translation workspace
+        loading.tsx
+        error.tsx
+    daily/
+      input/
+        page.tsx                      # Daily context + translation workspace
+        loading.tsx
+        error.tsx
+    review/
+      page.tsx                        # Flashcard review session
+      loading.tsx
+      error.tsx
+    history/
+      page.tsx                        # History list
+      loading.tsx
+      error.tsx
+      [id]/
+        page.tsx                      # Translation detail
+        loading.tsx
+        not-found.tsx
+    settings/
+      page.tsx                        # User preferences  # inferred
+
+domain_components_dirs: |
+  scene/                              # SceneCard, SceneSelector
+  translation/                        # SourceInput, TranslationEditor, AIReferenceToggle
+  review/                             # ReviewResultList, ReviewItem, ErrorBadge
+  flashcard/                          # FlashcardViewer, FlashcardFlip, RatingBar, SessionSummary
+  history/                            # HistoryCard, HistoryFilters, HistoryDetail
+  common/                             # PageHeader, EmptyState, ErrorBanner  # inferred
+
+services_files: |
+  ai.ts                               # AI review + AI reference translation calls
+  flashcard.ts                        # Flashcard CRUD + SM-2 scheduling logic
+  history.ts                          # Translation history CRUD + search/filter
+  translation.ts                      # Translation session management
+  settings.ts                         # User preference storage  # inferred
+
+mock_strategy: "in-memory"  # inferred — simplest for MVP; SM-2 state in localStorage
+api_backend_hint: "Next.js API Routes + Prisma (SQLite for dev, Postgres for prod)"  # inferred
+url_state_sync: "history list filters (scene type, date range, search query), history pagination"
+
+route_1: "/"
+route_1_features: "Scene selection cards (Interview + Daily); quick input shortcut; due-card badge linking to /review; responsive grid"
+route_2: "/interview/input"
+route_2_features: "Context form (job desc, company, question type); source text input with highlighting; translation writing area (toggleable); AI reference translation toggle; submit for review; sentence-by-sentence review display with error type badges; generate flashcard dialog (Paragraph/Sentence mode)"
+route_3: "/review"
+route_3_features: "Card front/back flip; context expand; AI revision + feedback toggles; SM-2 rating (0-5); card queue (new → due → random); progress indicator; session summary"
+
+layout_components: "Navbar, PageHeader, TwoColumnLayout, ActionBar, MobileBottomBar"  # inferred
+business_components: "SceneCard, ContextForm, SourceHighlighter, TranslationEditor, AIReferencePanel, ReviewResultList, ReviewItem, ErrorTypeBadge, FlashcardViewer, FlashcardFlip, RatingBar, SessionSummary, HistoryCard, HistoryFilters, StatsSummary"
+
+forms_to_build: "InterviewContextForm (job_description + company_background + question_type), DailyContextForm (setting + formality), TranslationForm (source_text + translation)"
+tables_to_build: "HistoryList (filterable card list with search, scene tab filter, date range filter, pagination)"
+dialogs_sheets_to_build: "FlashcardModeDialog (choose Paragraph/Sentence mode), ContextSheet (expandable context on flashcard review), DeleteConfirmDialog (history redo confirmation)"  # inferred
+toast_rules: "Success toast on flashcard generation; success toast on translation submit; error toast on AI review failure; error toast on flashcard generation failure"
+
+state_rules: |
+  /: Skeleton cards while loading recent history preview
+  /interview/input & /daily/input: Skeleton over review area while AI processes; disabled Submit until source_text filled
+  /review: Skeleton card while loading queue; empty state when no cards due; error alert if load fails
+  /history: Skeleton card list while loading; empty state with CTA when no history; error alert with retry
+  /history/[id]: Skeleton layout while loading; not-found if invalid ID
+
+dark_mode_strategy: "support"  # inferred — shadcn/ui has built-in dark mode support
+
+verification_steps: |
+  1. pnpm install && pnpm dev
+  2. Navigate to / — see two scene cards
+  3. Click Interview → fill context → enter source → write translation → submit → see review results
+  4. Click "Generate Flashcard" → choose mode → confirm → success toast
+  5. Navigate to /review → flip card → rate → next card
+  6. Navigate to /history → filter by scene → search → click detail
+  7. In detail view → redo translation → re-request review
+  8. Test responsive: resize to mobile width, verify stacked layouts and bottom CTA
+
+api_migration_notes: |
+  1. Replace in-memory mock data in services/*.ts with fetch calls to /api/* route handlers
+  2. Create /api/translations, /api/flashcards, /api/history route handlers
+  3. Add Prisma schema for Translation, FlashcardCard, ReviewResult models
+  4. Move SM-2 calculation from client to server (keep pure function in lib/sm2.ts)
+  5. Replace localStorage settings with database-backed user preferences
+  6. Add API error handling with proper HTTP status codes
+
+
+# ============================================================
+# AI STUDIO FOLLOW-UP SLOTS (harden from demo to production)
+# ============================================================
+
+do_not_change_visual_parts: "Scene card layout, color scheme (blue/green dual accent), error type badge colors, flashcard flip animation, review card left-border style, Navbar layout"  # inferred
+
+naming_rules: "PascalCase for components and types, camelCase for functions/variables/hooks, kebab-case for routes and CSS files, UPPER_SNAKE_CASE for constants"  # inferred
+
+common_components_to_extract: "PageHeader, EmptyState, ErrorBanner, SceneTypeBadge, ErrorTypeBadge, LoadingCard, ActionBar, ToggleOption"  # inferred
+
+list_perf_strategy: "Virtualize history list if > 100 items using @tanstack/react-virtual; paginate flashcard queue loading in batches of 20"  # inferred
+
+ux_copy_improvements: |
+  Empty history: add book illustration + "Your translation journey starts here. Pick a scene and begin!"
+  Empty review: add checkmark illustration + "All caught up! No cards due for review."
+  AI review error: "We couldn't analyze your translation right now. Please check your connection and try again."
+  Flashcard generation error: "Flashcard couldn't be created. Your translation is saved — try generating again."
+
+test_stack: "Vitest + React Testing Library + Playwright"  # inferred
+
+test_cases: |
+  Unit:
+  - SM-2 algorithm: correct interval calculation for each rating (0-5)
+  - Source text highlighting logic
+  - History filter/search logic
+  Integration:
+  - Interview flow: fill context → input source → write translation → submit → review renders correctly → generate flashcard
+  - Daily flow: quick input → toggle AI-only mode → submit → review → generate sentence-mode flashcards
+  - Review session: load due cards → flip → rate → verify next card loads → session summary at end
+  E2E (Playwright):
+  - Full interview translation journey end-to-end
+  - Full daily quick-input journey end-to-end
+  - Flashcard review session with multiple ratings
+  - History page: search, filter, navigate to detail, redo translation
+
+project_stage: "MVP / prototype hardening"  # inferred

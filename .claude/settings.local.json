@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Skill(sdd-specify)",
-      "Skill(sdd-specify:*)"
+      "Skill(sdd-specify:*)",
+      "Bash(python:*)",
+      "Bash(echo:*)",
+      "Bash(pip install:*)",
+      "Bash(test:*)"
     ]
   }
 }
