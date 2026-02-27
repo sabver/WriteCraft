@@ -177,7 +177,8 @@ After completing all four steps, you'll have three comprehensive prompts:
 
 | Command | Description |
 |---------|-------------|
-| `/spec-to-components <spec_path>` | Generate frontend component breakdown from a spec |
-| `/fill-slots <spec_path>` | Generate slots.yaml from a requirements spec |
-| `/apply-slots <yaml> <template> <output>` | Fill a template with slot values and write output |
-| `/merge-prompt <prompt> <spec> [component_spec] [output]` | Enrich a filled prompt with details from the spec |
+| `/prompt-build <spec_path>` | **One-shot pipeline**: spec → component breakdown → slots → filled prompts → merged prompts |
+| `/spec-to-components <spec_path>` | Step 1: Generate frontend component breakdown from a spec |
+| `/fill-slots <spec_path>` | Step 2: Generate slots.yaml from a requirements spec |
+| `/apply-slots <yaml> <template> <output>` | Step 3: Fill a template with slot values and write output |
+| `/merge-prompt <prompt> <spec> [component_spec] [output]` | Step 4: Enrich a filled prompt with details from the spec |

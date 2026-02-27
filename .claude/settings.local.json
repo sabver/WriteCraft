@@ -6,7 +6,11 @@
       "Bash(python:*)",
       "Bash(echo:*)",
       "Bash(pip install:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git commit:*)",
+      "Bash(ls -la \"c:\\\\Users\\\\ye\\\\source_code\\\\WriteCraft\\\\prompt\"\" && echo \"---\" && ls -la \"c:Usersyesource_codeWriteCraftprompttemplate\"\")",
+      "Bash(dir:*)",
+      "Bash(ls -la \"c:\\\\Users\\\\ye\\\\source_code\\\\WriteCraft\\\\specs\\\\default\\\\prompts\"\" 2>/dev/null || dir \"c:Usersyesource_codeWriteCraftspecsdefaultprompts\"\")"
     ]
   }
 }
