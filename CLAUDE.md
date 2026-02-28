@@ -6,10 +6,10 @@
 - Prefer small, verifiable steps; run lint/test after each meaningful change.
 
 ## Tech stack
-- Next.js (Turbopack) + React + TypeScript + shadcn/ui + Tailwind CSS
+- Next.js 15 (Turbopack) + React 19 + TypeScript + shadcn/ui (new-york) + Tailwind CSS v4
 - Package manager: pnpm
 - Testing: (fill in: vitest/jest/playwright)
-- Lint/format: (fill in: eslint/prettier)
+- Lint/format: eslint (typescript-eslint + react-hooks)
 
 ## Repo conventions
 - Specs live under /specs/<NNN-feature>/...
