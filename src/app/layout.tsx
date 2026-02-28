@@ -1,19 +1,33 @@
-import type { Metadata } from "next"
-import "./globals.css"
+import type { Metadata } from 'next';
+import { Inter, Lexend, JetBrains_Mono } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const lexend = Lexend({
+  subsets: ['latin'],
+  variable: '--font-lexend',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+});
 
 export const metadata: Metadata = {
-  title: "WriteCraft",
-  description: "WriteCraft",
-}
+  title: 'WriteCraft - Master English through Practice',
+  description: 'AI-powered English translation practice and SRS flashcards.',
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className={`${inter.variable} ${lexend.variable} ${jetbrainsMono.variable}`}>
+      <body suppressHydrationWarning className="font-sans">
+        {children}
+      </body>
     </html>
-  )
+  );
 }
