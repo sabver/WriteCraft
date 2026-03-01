@@ -24,7 +24,7 @@ export default function ReviewPage() {
         const res = await fetch('/api/review', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ source, translation, scene: 'interview', context: {} }),
+          body: JSON.stringify({ source, translation, scene: 'INTERVIEW', context: {} }),
         });
         if (!res.ok) throw new Error('Review request failed');
         const { data } = await res.json();
