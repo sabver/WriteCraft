@@ -1,33 +1,7 @@
+// spec: 001-database  AC-3.1, AC-4.1–4.3, AC-5.1–5.3
+// Note: mock storage will be replaced with real API calls in T-20.
 import { Flashcard } from "@/lib/types";
-
-// SM-2 Algorithm Implementation
-export function calculateNextReview(rating: number, previousInterval: number, previousEase: number): { interval: number, ease: number, nextDate: string } {
-  let interval: number;
-  let ease = previousEase;
-
-  if (rating >= 3) {
-    if (previousInterval === 0) {
-      interval = 1;
-    } else if (previousInterval === 1) {
-      interval = 6;
-    } else {
-      interval = Math.round(previousInterval * ease);
-    }
-    ease = Math.max(1.3, ease + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02)));
-  } else {
-    interval = 1;
-    ease = Math.max(1.3, ease - 0.2);
-  }
-
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + interval);
-
-  return {
-    interval,
-    ease,
-    nextDate: nextDate.toISOString(),
-  };
-}
+import { applyRating } from "@/lib/sm2";
 
 // Mock storage for demo
 let mockFlashcards: Flashcard[] = [];
@@ -54,12 +28,17 @@ export async function updateFlashcard(id: string, rating: number): Promise<void>
   if (cardIndex === -1) return;
 
   const card = mockFlashcards[cardIndex];
-  const { interval, ease, nextDate } = calculateNextReview(rating, card.interval, card.easeFactor);
+  const { interval, easeFactor, nextReviewDate } = applyRating(
+    rating,
+    card.interval,
+    card.easeFactor,
+    0, // repetitions not tracked in mock shape; T-20 will wire real state
+  );
 
   mockFlashcards[cardIndex] = {
     ...card,
     interval,
-    easeFactor: ease,
-    nextReviewDate: nextDate,
+    easeFactor,
+    nextReviewDate: nextReviewDate.toISOString(),
   };
 }

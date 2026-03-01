@@ -1,0 +1,118 @@
+// WriteCraft database schema
+// spec: 001-database  plan: §2
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────
+
+enum SceneType {
+  INTERVIEW
+  DAILY
+}
+
+enum IssueType {
+  GRAMMAR
+  WORD_CHOICE
+  STRUCTURE
+}
+
+enum Severity {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum FlashcardMode {
+  PARAGRAPH
+  SENTENCE
+}
+
+// ─── Models ───────────────────────────────────────────────────
+
+// One record per complete practice session  [spec: AC-1.1]
+model TranslationSession {
+  id              String        @id @default(cuid())
+  scene           SceneType
+  // Interview: { jobDescription, companyBackground, questionType }
+  // Daily:     { setting?, formalityLevel? }
+  context         Json
+  sourceText      String        @db.Text
+  userTranslation String        @db.Text
+  aiReference     String        @db.Text
+  createdAt       DateTime      @default(now())
+
+  issues     ReviewIssue[]
+  flashcards Flashcard[]
+
+  @@index([scene])                 // spec: AC-2.2, NFR-3
+  @@index([createdAt(sort: Desc)]) // spec: AC-2.1, NFR-3
+}
+
+// One row per AI feedback item; ordered by sortOrder  [spec: AC-1.2]
+model ReviewIssue {
+  id        String             @id @default(cuid())
+  sessionId String
+  session   TranslationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  type      IssueType
+  title     String
+  original  String    @db.Text
+  revised   String    @db.Text
+  reason    String    @db.Text
+  severity  Severity
+  sortOrder Int       // display order (#1, #2, ...)
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+// One or more cards per session; carries SM-2 state  [spec: AC-3.1]
+model Flashcard {
+  id        String             @id @default(cuid())
+  sessionId String
+  session   TranslationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  scene   SceneType     // denormalized — avoids join on review page
+  context Json          // denormalized — avoids join on review page
+  mode    FlashcardMode
+
+  // Card faces
+  front               String @db.Text
+  backUserTranslation String @db.Text
+  backAiRevision      String @db.Text
+  backFeedbackSummary Json   // string[] max 3 items
+
+  // SM-2 scheduling state  [spec: AC-3.1, AC-5.2]
+  interval       Int      @default(1)     // days until next review
+  easeFactor     Float    @default(2.5)   // min 1.3  [spec: AC-5.3]
+  repetitions    Int      @default(0)     // successful reviews (rating >= 3)
+  nextReviewDate DateTime @default(now()) // spec: AC-4.1
+
+  createdAt  DateTime    @default(now())
+  reviewLogs ReviewLog[]
+
+  @@index([nextReviewDate]) // spec: AC-4.1, NFR-3
+  @@index([sessionId])
+}
+
+// Immutable log entry per rating event  [spec: AC-5.1]
+model ReviewLog {
+  id          String    @id @default(cuid())
+  flashcardId String
+  flashcard   Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+
+  rating           Int   // 0–5
+  intervalBefore   Int
+  easeFactorBefore Float
+  reviewedAt       DateTime @default(now())
+
+  @@index([flashcardId])
+}

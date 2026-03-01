@@ -10,7 +10,41 @@
       "Bash(git commit:*)",
       "Bash(ls -la \"c:\\\\Users\\\\ye\\\\source_code\\\\WriteCraft\\\\prompt\"\" && echo \"---\" && ls -la \"c:Usersyesource_codeWriteCraftprompttemplate\"\")",
       "Bash(dir:*)",
-      "Bash(ls -la \"c:\\\\Users\\\\ye\\\\source_code\\\\WriteCraft\\\\specs\\\\default\\\\prompts\"\" 2>/dev/null || dir \"c:Usersyesource_codeWriteCraftspecsdefaultprompts\"\")"
+      "Bash(ls -la \"c:\\\\Users\\\\ye\\\\source_code\\\\WriteCraft\\\\specs\\\\default\\\\prompts\"\" 2>/dev/null || dir \"c:Usersyesource_codeWriteCraftspecsdefaultprompts\"\")",
+      "Bash(pnpm install)",
+      "Bash(pnpm run build)",
+      "Bash(node -e \"const r = require\\(''./node_modules/react-resizable-panels/dist/react-resizable-panels.cjs''\\); console.log\\(Object.keys\\(r\\)\\)\")",
+      "Bash(powershell.exe -Command \"Remove-Item -LiteralPath ''C:\\\\Users\\\\ye\\\\source_code\\\\WriteCraft\\\\nul'' -Force\")",
+      "Bash(python3 -c \"import sys,json; d=sys.stdin.read\\(\\); print\\(''Error'' if ''TurbopackInternalError'' in d else ''OK - page loaded''\\)\")",
+      "Bash(pnpm add framer-motion)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\(''scripts'',{}\\), **{''deps'': list\\(d.get\\(''dependencies'',{}\\).keys\\(\\)\\)[:5]}}, indent=2\\)\\)\")",
+      "Bash(pnpm add prisma @prisma/client --save-dev)",
+      "Bash(pnpm add -D vitest @vitest/coverage-v8)",
+      "Bash(pnpm exec prisma init --datasource-provider postgresql)",
+      "Bash(pnpm exec prisma --version)",
+      "Bash(pnpm exec vitest --version)",
+      "Bash(pnpm add -D dotenv)",
+      "Bash(pnpm exec prisma validate)",
+      "Bash(docker compose up -d)",
+      "Bash(docker.exe compose up -d)",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''scripts:'', json.dumps\\(d.get\\(''scripts'',{}\\), indent=2\\)\\); print\\(''deps:'', list\\(d.get\\(''dependencies'',{}\\).keys\\(\\)\\)\\); print\\(''devdeps:'', list\\(d.get\\(''devDependencies'',{}\\).keys\\(\\)\\)\\)\")",
+      "Bash(pnpm test src/lib/sm2.test.ts)",
+      "Bash(pnpm exec tsc --noEmit)",
+      "Bash(pnpm run db:generate)",
+      "Bash(ls src/generated/prisma/*.ts)",
+      "Bash(pnpm add @prisma/adapter-pg pg)",
+      "Bash(pnpm add -D @types/pg)",
+      "Bash(docker info)",
+      "Bash(docker compose -f /c/Users/ye/source_code/WriteCraft/docker-compose.yml up -d)",
+      "Bash(DATABASE_URL=\"postgresql://writecraft:writecraft@localhost:5432/writecraft\" pnpm exec prisma migrate dev --name init)",
+      "Bash(pnpm exec prisma migrate status)",
+      "Bash(pnpm test src/app/api/sessions/sessions.test.ts)",
+      "Bash(pnpm run lint)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\ye\\source_code\\WriteCraft\\specs",
+      "C:\\Users\\ye\\source_code\\WriteCraft\\src\\app\\api\\sessions"
     ]
   }
 }
