@@ -847,8 +847,8 @@ Implements spec 001-database (AC-1.1 through AC-7.1)
 - [x] T-15 POST /api/flashcards ✅
 - [x] T-16 GET due + count ✅
 - [x] T-17 PATCH rate ✅
-- [ ] T-18 sessions.ts service
-- [ ] T-19 navigation.ts service
-- [ ] T-20 flashcard.ts update
+- [x] T-18 sessions.ts service ✅
+- [x] T-19 navigation.ts service ✅
+- [x] T-20 flashcard.ts update ✅ — mock replaced with real API calls; vitest fileParallelism:false added
 - [ ] T-21 E2E test
 - [ ] T-22 Final lint + build + commit
