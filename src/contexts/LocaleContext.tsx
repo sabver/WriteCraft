@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
+import enMessages from '../../messages/en.json';
 import {
   DEFAULT_LOCALE,
   LOCALE_STORAGE_KEY,
@@ -36,10 +37,19 @@ function resolveInitialLocale(): Locale {
 }
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  // Lazy initializer reads localStorage/navigator synchronously on first render.
-  // This eliminates the locale flash without needing an extra useEffect.
-  const [locale, setLocaleState] = useState<Locale>(resolveInitialLocale);
-  const [messages, setMessages] = useState<Record<string, unknown> | null>(null);
+  // Keep SSR and first CSR render stable (en), then hydrate to persisted/detected locale.
+  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+  const [messages, setMessages] = useState<Record<string, unknown>>(enMessages as Record<string, unknown>);
+
+  // After mount: resolve locale from localStorage or browser language.
+  useEffect(() => {
+    const initialLocale = resolveInitialLocale();
+    if (initialLocale !== DEFAULT_LOCALE) {
+      queueMicrotask(() => {
+        setLocaleState(initialLocale);
+      });
+    }
+  }, []);
 
   // When locale changes: load the matching message file
   useEffect(() => {
@@ -51,13 +61,15 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, [locale]);
 
   function setLocale(newLocale: Locale) {
-    localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
+    }
     setLocaleState(newLocale);
   }
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale }}>
-      <NextIntlClientProvider locale={locale} messages={messages ?? {}}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
         {children}
       </NextIntlClientProvider>
     </LocaleContext.Provider>

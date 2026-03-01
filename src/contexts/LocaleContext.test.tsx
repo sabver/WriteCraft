@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, act, cleanup } from '@testing-library/react';
+import { render, act, cleanup, waitFor } from '@testing-library/react';
 import React from 'react';
 
 // Mock both async dependencies so no real I/O happens in tests
@@ -50,17 +50,21 @@ describe('LocaleContext', () => {
     expect(getByTestId('locale').textContent).toBe('en');
   });
 
-  it('defaults to zh-CN when detectLocale returns zh-CN and no stored preference', () => {
+  it('defaults to zh-CN when detectLocale returns zh-CN and no stored preference', async () => {
     mockDetect.mockReturnValue('zh-CN');
     const { getByTestId } = renderProvider();
-    expect(getByTestId('locale').textContent).toBe('zh-CN');
+    await waitFor(() => {
+      expect(getByTestId('locale').textContent).toBe('zh-CN');
+    });
   });
 
-  it('uses stored localStorage value over detectLocale result', () => {
+  it('uses stored localStorage value over detectLocale result', async () => {
     localStorage.setItem(STORAGE_KEY, 'zh-CN');
     mockDetect.mockReturnValue('en'); // navigator says en, localStorage overrides
     const { getByTestId } = renderProvider();
-    expect(getByTestId('locale').textContent).toBe('zh-CN');
+    await waitFor(() => {
+      expect(getByTestId('locale').textContent).toBe('zh-CN');
+    });
   });
 
   it('setLocale updates locale state', async () => {
