@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { Search, Calendar as CalendarIcon, ArrowRight, BookOpen, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import { PageWrapper } from '@/components/common/PageWrapper';
 import { SceneBadge } from '@/components/common/SceneBadge';
 import { SkeletonCard } from '@/components/common/SkeletonCard';
-import { Search, Calendar as CalendarIcon, ArrowRight, BookOpen, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import { getSessions } from '@/services/sessions';
 import type { SessionListItem, HistoryFilter } from '@/lib/types';
 
@@ -18,6 +19,7 @@ export default function HistoryPage() {
   const [sceneFilter, setSceneFilter] = useState<'all' | 'interview' | 'daily'>('all');
   const [rangeFilter, setRangeFilter] = useState<'all' | '7d' | '30d'>('all');
   const [searchQ, setSearchQ] = useState('');
+  const t = useTranslations('history');
 
   useEffect(() => {
     const filter: HistoryFilter = {
@@ -32,23 +34,34 @@ export default function HistoryPage() {
       setFetchError(null);
       getSessions(filter)
         .then(setSessions)
-        .catch((e) => {
-          setFetchError(e instanceof Error ? e.message : 'Failed to load history. Please try again.');
+        .catch(() => {
+          setFetchError(t('loadError'));
           setSessions([]);
         })
         .finally(() => setLoading(false));
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [sceneFilter, rangeFilter, searchQ]);
+  }, [sceneFilter, rangeFilter, searchQ, t]);
+
+  const sceneLabels: Record<'all' | 'interview' | 'daily', string> = {
+    all: t('filterAll'),
+    interview: t('filterInterview'),
+    daily: t('filterDaily'),
+  };
+  const rangeLabels: Record<'all' | '7d' | '30d', string> = {
+    all: t('timeAll'),
+    '7d': t('time7d'),
+    '30d': t('time30d'),
+  };
 
   return (
     <MainLayout>
       <PageWrapper>
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-1 font-display">Practice History</h2>
-            <p className="text-slate-500 text-lg font-medium">Review your past sessions and track your progress.</p>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-1 font-display">{t('pageTitle')}</h2>
+            <p className="text-slate-500 text-lg font-medium">{t('pageSubtitle')}</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -56,8 +69,8 @@ export default function HistoryPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary outline-none transition-all w-full md:w-64"
-                placeholder="Search history..."
-                aria-label="Search history"
+                placeholder={t('searchPlaceholder')}
+                aria-label={t('searchPlaceholder')}
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
               />
@@ -71,11 +84,11 @@ export default function HistoryPage() {
               key={filter}
               onClick={() => setSceneFilter(filter)}
               className={cn(
-                "px-4 py-2 text-sm font-bold uppercase tracking-widest transition-all border-b-2",
-                sceneFilter === filter ? "text-primary border-primary" : "text-slate-400 border-transparent hover:text-slate-600"
+                'px-4 py-2 text-sm font-bold uppercase tracking-widest transition-all border-b-2',
+                sceneFilter === filter ? 'text-primary border-primary' : 'text-slate-400 border-transparent hover:text-slate-600',
               )}
             >
-              {filter}
+              {sceneLabels[filter]}
             </button>
           ))}
 
@@ -85,11 +98,11 @@ export default function HistoryPage() {
                 key={r}
                 onClick={() => setRangeFilter(r)}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-bold rounded-lg transition-all",
-                  rangeFilter === r ? "bg-primary text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  'px-3 py-1.5 text-xs font-bold rounded-lg transition-all',
+                  rangeFilter === r ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200',
                 )}
               >
-                {r === 'all' ? 'All time' : r}
+                {rangeLabels[r]}
               </button>
             ))}
           </div>
@@ -104,7 +117,9 @@ export default function HistoryPage() {
 
         {loading ? (
           <div className="grid grid-cols-1 gap-4">
-            {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
+            {[1, 2, 3].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -115,10 +130,12 @@ export default function HistoryPage() {
                 className="group bg-white p-6 rounded-3xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:shadow-md transition-all"
               >
                 <div className="flex items-center gap-6 flex-1 min-w-0">
-                  <div className={cn(
-                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0",
-                    s.scene === 'INTERVIEW' ? "bg-blue-50 text-blue-600" : "bg-green-50 text-green-600"
-                  )}>
+                  <div
+                    className={cn(
+                      'w-14 h-14 rounded-2xl flex items-center justify-center shrink-0',
+                      s.scene === 'INTERVIEW' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600',
+                    )}
+                  >
                     <CalendarIcon className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -133,12 +150,14 @@ export default function HistoryPage() {
 
                 <div className="flex items-center gap-6 shrink-0">
                   <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Issues</span>
-                    <span className={cn(
-                      "text-sm font-black",
-                      s.issueCount > 0 ? "text-orange-500" : "text-green-500"
-                    )}>
-                      {s.issueCount === 0 ? 'Perfect' : `${s.issueCount} found`}
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('issuesLabel')}</span>
+                    <span
+                      className={cn(
+                        'text-sm font-black',
+                        s.issueCount > 0 ? 'text-orange-500' : 'text-green-500',
+                      )}
+                    >
+                      {s.issueCount === 0 ? t('perfectLabel') : t('issueCount', { count: s.issueCount })}
                     </span>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">
@@ -154,14 +173,11 @@ export default function HistoryPage() {
                   <BookOpen className="w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-slate-900 font-black text-xl">No history yet</p>
-                  <p className="text-slate-500 font-medium">Every practice session is a step forward.</p>
+                  <p className="text-slate-900 font-black text-xl">{t('emptyTitle')}</p>
+                  <p className="text-slate-500 font-medium">{t('emptyBody')}</p>
                 </div>
-                <Link
-                  href="/"
-                  className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-                >
-                  Start Practicing
+                <Link href="/" className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                  {t('startPracticeBtn')}
                 </Link>
               </div>
             )}
