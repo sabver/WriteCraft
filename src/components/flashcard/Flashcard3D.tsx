@@ -18,12 +18,10 @@ export function Flashcard3D({ front, back, onFlip }: Flashcard3DProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleFlip = useCallback(() => {
-    setIsFlipped((prev) => {
-      const nextState = !prev;
-      onFlip?.(nextState);
-      return nextState;
-    });
-  }, [onFlip]);
+    const nextState = !isFlipped;
+    setIsFlipped(nextState);
+    onFlip?.(nextState);
+  }, [isFlipped, onFlip]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === ' ' || e.key === 'Enter') {
