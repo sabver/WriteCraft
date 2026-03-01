@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { ThemeProvider as NextThemeProvider } from 'next-themes';
 
 export type AppTheme = 'light' | 'dark';

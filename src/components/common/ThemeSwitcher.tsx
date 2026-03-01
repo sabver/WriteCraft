@@ -1,10 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+
+// Returns false on the server and on the initial client render, true after hydration.
+// useSyncExternalStore is the React 18+ blessed way to read client-only state
+// without triggering hydration mismatches.
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
 
 type ThemeOption = 'light' | 'dark';
 
@@ -17,7 +28,10 @@ function resolveActiveTheme(theme: string | undefined, resolvedTheme: string | u
 export function ThemeSwitcher() {
   const t = useTranslations('themeSwitcher');
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const activeTheme = resolveActiveTheme(theme, resolvedTheme);
+  const isClient = useIsClient();
+  // Before hydration completes, isClient is false so activeTheme is undefined
+  // and both buttons render in their inactive state — matching SSR HTML exactly.
+  const activeTheme = isClient ? resolveActiveTheme(theme, resolvedTheme) : undefined;
 
   return (
     <div aria-label={t('label')} className="flex items-center gap-2 px-3 py-2">
