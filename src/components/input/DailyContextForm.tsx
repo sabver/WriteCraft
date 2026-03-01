@@ -6,14 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DailyContextSchema } from '@/lib/schemas';
 import { z } from 'zod';
 import { ChevronDown, ArrowRight, Wand2, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { BlockLabel } from '@/components/common/BlockLabel';
 import { Button } from '@/components/ui/button';
 
 type DailyContext = z.infer<typeof DailyContextSchema>;
 
 export function DailyContextForm({ onNext }: { onNext: (data: DailyContext) => void }) {
-  const { register, handleSubmit, formState: { isValid } } = useForm<DailyContext>({
+  const { register, handleSubmit } = useForm<DailyContext>({
     resolver: zodResolver(DailyContextSchema),
     mode: 'onChange',
   });

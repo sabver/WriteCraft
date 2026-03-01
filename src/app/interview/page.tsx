@@ -13,25 +13,19 @@ import { useRouter } from 'next/navigation';
 
 export default function InterviewPage() {
   const [step, setStep] = useState(0);
-  const [context, setContext] = useState<any>(null);
   const [sourceText, setSourceText] = useState('');
   const router = useRouter();
 
-  const handleContextSubmit = (data: any) => {
-    console.log('Context submitted:', data);
-    setContext(data);
+  const handleContextSubmit = () => {
     setStep(1);
   };
 
   const handleSourceSubmit = (data: { sourceText: string }) => {
-    console.log('Source submitted:', data);
     setSourceText(data.sourceText);
     setStep(2);
   };
 
-  const handleTranslationSubmit = (translation: string) => {
-    console.log('Translation submitted:', translation);
-    // In a real app, we'd save session data here
+  const handleTranslationSubmit = () => {
     router.push('/review');
   };
 

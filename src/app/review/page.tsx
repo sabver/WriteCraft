@@ -9,7 +9,6 @@ import { ActionBar } from '@/components/common/ActionBar';
 import { SkeletonCard } from '@/components/common/SkeletonCard';
 import { CheckCircle2, Sparkles, ArrowRight, AlertCircle } from 'lucide-react';
 import { ReviewIssue } from '@/lib/types';
-import { getAIReview } from '@/services/ai';
 import Link from 'next/link';
 
 export default function ReviewPage() {
@@ -22,9 +21,15 @@ export default function ReviewPage() {
       try {
         const source = "The new skyscraper is very big in the city center.";
         const translation = "The new skyscraper is very big in the city center.";
-        const review = await getAIReview(source, translation, 'interview', {});
-        setIssues(review);
-      } catch (err) {
+        const res = await fetch('/api/review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source, translation, scene: 'interview', context: {} }),
+        });
+        if (!res.ok) throw new Error('Review request failed');
+        const { data } = await res.json();
+        setIssues(data);
+      } catch {
         setError("Failed to load AI review. Please check your connection and try again.");
       } finally {
         setLoading(false);

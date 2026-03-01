@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
+import type { TranslationSessionWhereInput } from '@/generated/prisma/models/TranslationSession'
 
 // ─── Validation schemas ───────────────────────────────────────────────────────
 
@@ -59,48 +60,62 @@ export async function POST(request: NextRequest) {
 
 // ─── GET /api/sessions ────────────────────────────────────────────────────────
 
+const VALID_SCENES = ['INTERVIEW', 'DAILY'] as const
+type ValidScene = typeof VALID_SCENES[number]
+
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl
-  const scene = searchParams.get('scene')
-  const range = searchParams.get('range')
-  const q = searchParams.get('q')
+  try {
+    const { searchParams } = request.nextUrl
+    const scene = searchParams.get('scene')
+    const range = searchParams.get('range')
+    const q = searchParams.get('q')
 
-  // Build dynamic where clause
-  const where: Record<string, unknown> = {}
+    // Build dynamic where clause
+    const where: TranslationSessionWhereInput = {}
 
-  if (scene && scene !== 'all') {
-    where.scene = scene.toUpperCase()
-  }
-
-  if (range && range !== 'all') {
-    const days = range === '7d' ? 7 : range === '30d' ? 30 : null
-    if (days !== null) {
-      where.createdAt = { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) }
+    if (scene && scene !== 'all') {
+      const upper = scene.toUpperCase()
+      if (!VALID_SCENES.includes(upper as ValidScene)) {
+        return NextResponse.json(
+          { success: false, error: `Invalid scene: ${scene}` },
+          { status: 400 },
+        )
+      }
+      where.scene = upper as ValidScene
     }
+
+    if (range && range !== 'all') {
+      const days = range === '7d' ? 7 : range === '30d' ? 30 : null
+      if (days !== null) {
+        where.createdAt = { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) }
+      }
+    }
+
+    if (q) {
+      where.OR = [
+        { sourceText: { contains: q, mode: 'insensitive' } },
+        { userTranslation: { contains: q, mode: 'insensitive' } },
+      ]
+    }
+
+    const sessions = await prisma.translationSession.findMany({
+      where,
+      include: { _count: { select: { issues: true } } },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    const data = sessions.map((s) => ({
+      id: s.id,
+      scene: s.scene,
+      context: s.context as Record<string, string>,
+      sourceText: s.sourceText,
+      userTranslation: s.userTranslation,
+      issueCount: s._count.issues,
+      createdAt: s.createdAt.toISOString(),
+    }))
+
+    return NextResponse.json({ success: true, data, meta: { total: data.length } })
+  } catch {
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
-
-  if (q) {
-    where.OR = [
-      { sourceText: { contains: q, mode: 'insensitive' } },
-      { userTranslation: { contains: q, mode: 'insensitive' } },
-    ]
-  }
-
-  const sessions = await prisma.translationSession.findMany({
-    where,
-    include: { _count: { select: { issues: true } } },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  const data = sessions.map((s) => ({
-    id: s.id,
-    scene: s.scene,
-    context: s.context as Record<string, string>,
-    sourceText: s.sourceText,
-    userTranslation: s.userTranslation,
-    issueCount: s._count.issues,
-    createdAt: s.createdAt.toISOString(),
-  }))
-
-  return NextResponse.json({ success: true, data, meta: { total: data.length } })
 }

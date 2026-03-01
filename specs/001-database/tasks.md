@@ -72,7 +72,7 @@ volumes:
 ```
 # Copy to .env.local and fill in your values
 DATABASE_URL="postgresql://writecraft:writecraft@localhost:5432/writecraft"
-NEXT_PUBLIC_GEMINI_API_KEY="your-gemini-key-here"
+GEMINI_API_KEY="your-gemini-key-here"
 ```
 
 **Validation**:

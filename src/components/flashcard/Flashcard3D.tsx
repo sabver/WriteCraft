@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 import { BlockLabel } from '@/components/common/BlockLabel';
 
 interface Flashcard3DProps {

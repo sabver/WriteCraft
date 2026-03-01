@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { SceneCard } from '@/components/scene/SceneCard';
 import { Languages, Sparkles, Mic, Clipboard, Volume2, Layers, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { PageWrapper } from '@/components/common/PageWrapper';
 import { BlockLabel } from '@/components/common/BlockLabel';
 import { Button } from '@/components/ui/button';
