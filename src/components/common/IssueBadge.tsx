@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface IssueBadgeProps {
@@ -9,13 +10,15 @@ interface IssueBadgeProps {
 }
 
 export function IssueBadge({ type, className }: IssueBadgeProps) {
-  const config = {
-    grammar: { label: 'Grammar', color: 'bg-red-100 text-red-700' },
-    'word-choice': { label: 'Word Choice', color: 'bg-yellow-100 text-yellow-700' },
-    structure: { label: 'Structure', color: 'bg-purple-100 text-purple-700' },
-  };
+  const t = useTranslations('common');
 
-  const { label, color } = config[type];
+  const config = {
+    grammar: { labelKey: 'issueGrammar', color: 'bg-red-100 text-red-700' },
+    'word-choice': { labelKey: 'issueWordChoice', color: 'bg-yellow-100 text-yellow-700' },
+    structure: { labelKey: 'issueStructure', color: 'bg-purple-100 text-purple-700' },
+  } as const;
+
+  const { labelKey, color } = config[type];
 
   return (
     <span className={cn(
@@ -23,7 +26,7 @@ export function IssueBadge({ type, className }: IssueBadgeProps) {
       color,
       className
     )}>
-      {label}
+      {t(labelKey)}
     </span>
   );
 }

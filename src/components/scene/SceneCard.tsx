@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Briefcase, Calendar, Bolt, SignalHigh } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SceneBadge } from '@/components/common/SceneBadge';
@@ -10,16 +13,17 @@ interface SceneCardProps {
 }
 
 export function SceneCard({ type, active }: SceneCardProps) {
+  const t = useTranslations('scene');
   const isInterview = type === 'interview';
-  
+
   return (
-    <Link 
+    <Link
       href={isInterview ? '/interview' : '/daily'}
       className={cn(
         "group relative bg-white rounded-3xl overflow-hidden shadow-sm border-2 transition-all hover:shadow-md",
         active ? "border-primary" : "border-transparent hover:border-slate-200"
       )}
-      aria-label={`Start ${isInterview ? 'Job Interview' : 'Daily Practice'} practice`}
+      aria-label={t('startAria', { scene: isInterview ? t('interviewTitle') : t('dailyTitle') })}
     >
       {active && (
         <div className="absolute top-4 right-4 z-10">
@@ -35,23 +39,21 @@ export function SceneCard({ type, active }: SceneCardProps) {
         </div>
         <div className="flex-1">
           <h3 className="font-bold text-2xl text-slate-900 mb-2 group-hover:text-primary transition-colors font-display tracking-tight">
-            {isInterview ? 'Job Interview' : 'Daily Practice'}
+            {isInterview ? t('interviewTitle') : t('dailyTitle')}
           </h3>
           <p className="text-slate-500 font-medium leading-relaxed">
-            {isInterview 
-              ? 'Structured practice for professional career-focused conversations.' 
-              : 'Quick translations for fragmented expressions and everyday thoughts.'}
+            {isInterview ? t('interviewDesc') : t('dailyDesc')}
           </p>
           <div className="mt-4 flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
             {isInterview ? (
               <div className="flex items-center gap-1.5">
                 <SignalHigh className="w-4 h-4" />
-                Intermediate
+                {t('interviewLevel')}
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
                 <Bolt className="w-4 h-4" />
-                Instant Mode
+                {t('dailyMode')}
               </div>
             )}
           </div>
