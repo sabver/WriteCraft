@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { ThemeSwitcher } from '@/components/common/ThemeSwitcher';
 
 type NavKey = 'dashboard' | 'history' | 'review' | 'flashcards';
 
@@ -104,6 +105,10 @@ export function Sidebar() {
           <HelpCircle className="w-5 h-5 text-slate-400 group-hover:text-primary" />
           <span className="text-[15px] font-semibold">{t('helpSupport')}</span>
         </Link>
+
+        <div className="mt-2">
+          <ThemeSwitcher />
+        </div>
 
         <div className="mt-2">
           <LanguageSwitcher />

@@ -238,5 +238,10 @@
     "label": "Language",
     "en": "English",
     "zhCN": "\u4e2d\u6587 (\u7b80\u4f53)"
+  },
+  "themeSwitcher": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

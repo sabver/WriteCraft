@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Lexend, JetBrains_Mono } from 'next/font/google';
 import { LocaleProvider } from '@/contexts/LocaleContext';
+import { ThemeContextProvider } from '@/contexts/ThemeContext';
 import './globals.css';
 
 const inter = Inter({
@@ -25,9 +26,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${lexend.variable} ${jetbrainsMono.variable}`}>
-      <body suppressHydrationWarning className="font-sans">
-        <LocaleProvider>{children}</LocaleProvider>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${lexend.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="font-sans">
+        <ThemeContextProvider>
+          <LocaleProvider>{children}</LocaleProvider>
+        </ThemeContextProvider>
       </body>
     </html>
   );

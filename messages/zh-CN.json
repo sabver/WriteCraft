@@ -235,8 +235,13 @@
     "issueStructure": "结构"
   },
   "langSwitcher": {
-    "label": "语言",
+    "label": "\u8bed\u8a00",
     "en": "English",
-    "zhCN": "中文 (简体)"
+    "zhCN": "\u4e2d\u6587 (\u7b80\u4f53)"
+  },
+  "themeSwitcher": {
+    "label": "\u4e3b\u9898",
+    "light": "\u6d45\u8272",
+    "dark": "\u6df1\u8272"
   }
 }
