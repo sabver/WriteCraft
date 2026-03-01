@@ -728,23 +728,23 @@ pnpm run lint   # next/no-assign-module-variable may flag — use eslint-disable
 ## Summary Checklist
 
 ### Phase 1 — Foundation
-- [ ] T01 — Install next-intl
-- [ ] T02 — Tests for config + detect (RED)
-- [ ] T03 — Implement config.ts (GREEN)
-- [ ] T04 — Implement detect.ts (GREEN)
-- [ ] T05 — Create messages/en.json
-- [ ] T06 — Create messages/zh-CN.json
-- [ ] T07 — Tests for LocaleContext (RED)
-- [ ] T08 — Implement LocaleContext (GREEN)
-- [ ] T09 — Wire LocaleProvider into layout.tsx
+- [x] T01 — Install next-intl
+- [x] T02 — Tests for config + detect (RED)
+- [x] T03 — Implement config.ts (GREEN)
+- [x] T04 — Implement detect.ts (GREEN)
+- [x] T05 — Create messages/en.json
+- [x] T06 — Create messages/zh-CN.json
+- [x] T07 — Tests for LocaleContext (RED)
+- [x] T08 — Implement LocaleContext (GREEN → also added loadMessages.ts helper)
+- [x] T09 — Wire LocaleProvider into layout.tsx
 
 ### Phase 2 — Language Switcher
-- [ ] T10 — Tests for LanguageSwitcher (RED)
-- [ ] T11 — Implement LanguageSwitcher (GREEN)
-- [ ] T12 — Add LanguageSwitcher to Sidebar
+- [x] T10 — Tests for LanguageSwitcher (RED)
+- [x] T11 — Implement LanguageSwitcher (GREEN)
+- [x] T12 — Add LanguageSwitcher to Sidebar
 
 ### Phase 3 — Translate All Strings (tasks T13–T19 are [P])
-- [ ] T13 — Shared: Sidebar, SceneCard, ProgressStepper, badges
+- [x] T13 — Shared: Sidebar, SceneCard, ProgressStepper, badges
 - [ ] T14 — Dashboard page
 - [ ] T15 — Daily Practice flow
 - [ ] T16 — Interview Practice flow
