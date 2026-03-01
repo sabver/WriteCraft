@@ -277,14 +277,14 @@ pnpm exec playwright test e2e/theme.spec.ts
 ## Summary Checklist
 
 ### Phase 0
-- [ ] T00 - Lock assumptions in spec/plan
+- [x] T00 - Lock assumptions in spec/plan
 
 ### Phase 1
-- [ ] T01 - TEST FIRST ThemeSwitcher test
-- [ ] T02 - Implement ThemeSwitcher
-- [ ] T03 - TEST FIRST ThemeContext/provider test
-- [ ] T04 - Implement theme provider + layout wiring
-- [ ] T05 - Add ThemeSwitcher to Sidebar
+- [x] T01 - TEST FIRST ThemeSwitcher test
+- [x] T02 - Implement ThemeSwitcher
+- [x] T03 - TEST FIRST ThemeContext/provider test
+- [x] T04 - Implement theme provider + layout wiring
+- [x] T05 - Add ThemeSwitcher to Sidebar
 
 ### Phase 2
 - [ ] T06 - Global theme tokens

@@ -1,7 +1,7 @@
 # Plan 005 - Frontend Light and Dark Mode
 
 **Spec:** `specs/005-light-dark-mode/spec.md`  
-**Status:** Draft
+**Status:** Assumptions locked for implementation
 
 ---
 
@@ -31,9 +31,9 @@ Use a single app-level theme source of truth and apply theme via the root HTML c
 
 ---
 
-## 2. Assumptions for Planning
+## 2. Assumptions for This Implementation Cycle
 
-Because Spec 005 still has unresolved clarifications, this plan proceeds with default assumptions:
+These assumptions are locked for the current implementation cycle and aligned with `spec.md`:
 
 1. First visit defaults to **system preference**, with **light fallback** if unavailable.
 2. Theme control offers **Light** and **Dark** only (no explicit System option in UI for this iteration).
@@ -42,7 +42,7 @@ Because Spec 005 still has unresolved clarifications, this plan proceeds with de
 5. Mandatory route scope for implementation/testing is current core routes:
    `/`, `/daily`, `/interview`, `/review`, `/history`, `/history/[id]`, `/flashcard/generate`, `/flashcard/review`.
 
-If these assumptions change, this plan remains valid with small adjustments in Phase 1.
+If product decisions change in a future cycle, this plan remains valid with small adjustments in Phase 1.
 
 ---
 
@@ -214,4 +214,3 @@ Priority coverage:
 | NFR-03 Persistence across sessions | Storage model in Section 3 and behavior in 6.2 |
 | NFR-04 Minimize incorrect-theme flash | Hydration-safe provider config in 6.1 + risk mitigation |
 | NFR-05 No flow regression | Integration checks in 7.2 + phased rollout |
-

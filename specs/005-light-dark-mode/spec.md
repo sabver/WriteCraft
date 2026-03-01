@@ -1,6 +1,6 @@
 # Spec 005 - Frontend Light and Dark Mode
 
-## Status: Draft (needs clarification)
+## Status: Draft (assumptions locked for implementation)
 
 ---
 
@@ -110,18 +110,24 @@ Adding frontend light/dark mode improves visual comfort, perceived polish, and a
 
 ## 5. Open Questions
 
-- [NEEDS CLARIFICATION: On first visit with no saved preference, should default follow system preference or always start in Light mode?]
-- [NEEDS CLARIFICATION: Where should the theme switcher be placed (sidebar footer, top bar, settings page, or multiple locations)?]
-- [NEEDS CLARIFICATION: Should there be only two options (Light/Dark) or include a third "System" option?]
-- [NEEDS CLARIFICATION: Is minor initial theme flash acceptable, or is strict no-flash behavior required before first paint?]
-- [NEEDS CLARIFICATION: Are `/settings` and `/help` part of mandatory theme QA scope in this feature?]
+The following assumptions are **locked for this implementation cycle** to avoid contradictory execution:
+
+- First visit default: follow system preference, with light fallback.
+- Switcher placement: sidebar footer.
+- Theme options in UI: Light and Dark only.
+- Initial flash tolerance: minor flash acceptable as long as minimized.
+- Mandatory QA route scope: core routes only (`/`, `/daily`, `/interview`, `/review`, `/history`, `/history/[id]`, `/flashcard/generate`, `/flashcard/review`).
+
+Deferred product decisions for future iteration:
+- [NEEDS CLARIFICATION: Should a "System" option be exposed in the user-facing switcher?]
+- [NEEDS CLARIFICATION: Should `/settings` and `/help` be promoted into mandatory theme QA scope for this feature?]
 
 ---
 
-## 6. Clarification Checklist (Unresolved)
+## 6. Clarification Checklist
 
-- [ ] Default strategy on first visit confirmed.
-- [ ] Theme switcher placement confirmed.
-- [ ] Option set confirmed (Light/Dark vs Light/Dark/System).
-- [ ] Initial-load flash tolerance confirmed.
-- [ ] Final route scope for verification confirmed.
+- [x] Default strategy on first visit confirmed for this cycle.
+- [x] Theme switcher placement confirmed for this cycle.
+- [x] Option set confirmed for this cycle (Light/Dark).
+- [x] Initial-load flash tolerance confirmed for this cycle.
+- [x] Final route scope for verification confirmed for this cycle.
