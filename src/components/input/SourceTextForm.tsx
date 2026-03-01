@@ -41,15 +41,15 @@ export function SourceTextForm({ onNext, placeholder, hint }: SourceTextFormProp
           id="source-text"
           {...register('sourceText')}
           className={cn(
-            'w-full bg-slate-50 border rounded-3xl px-6 py-5 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none text-xl font-medium',
-            errors.sourceText ? 'border-red-300' : 'border-slate-200',
+            'w-full bg-app-surface-muted border rounded-3xl px-6 py-5 text-app-text placeholder:text-app-text-muted focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none text-xl font-medium',
+            errors.sourceText ? 'border-red-300' : 'border-app-border',
           )}
           placeholder={resolvedPlaceholder}
           rows={6}
           aria-describedby="source-hint"
         />
         {errors.sourceText && <p className="text-xs text-red-500 font-bold">{errors.sourceText.message}</p>}
-        <p id="source-hint" className="text-xs text-slate-400 font-medium">{resolvedHint}</p>
+        <p id="source-hint" className="text-xs text-app-text-muted font-medium">{resolvedHint}</p>
       </div>
 
       <div className="bg-amber-50/50 rounded-[2.5rem] p-10 border border-amber-100 flex items-start gap-6">
@@ -57,12 +57,12 @@ export function SourceTextForm({ onNext, placeholder, hint }: SourceTextFormProp
           <Wand2 className="w-6 h-6" />
         </div>
         <div>
-          <h4 className="text-lg font-bold text-slate-900 mb-2">{t('whyTitle')}</h4>
-          <p className="text-slate-600 font-medium leading-relaxed">{t('whyBody')}</p>
+          <h4 className="text-lg font-bold text-app-text mb-2">{t('whyTitle')}</h4>
+          <p className="text-app-text-muted font-medium leading-relaxed">{t('whyBody')}</p>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-end pt-10 border-t border-slate-100 gap-8">
+      <div className="flex flex-col md:flex-row items-center justify-end pt-10 border-t border-app-border gap-8">
         <div className="flex items-center gap-4 w-full md:w-auto">
           <Button
             type="submit"
@@ -75,7 +75,7 @@ export function SourceTextForm({ onNext, placeholder, hint }: SourceTextFormProp
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-10 text-slate-400 pt-6">
+      <div className="flex justify-center items-center gap-10 text-app-text-muted pt-6">
         <div className="flex items-center gap-2.5">
           <Clock className="w-5 h-5" />
           <span className="text-[10px] uppercase font-black tracking-[0.15em]">{t('duration')}</span>

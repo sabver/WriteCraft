@@ -38,15 +38,15 @@ export function InterviewContextForm({ onNext }: { onNext: (data: InterviewConte
           id="interview-question"
           {...register('jobDescription')}
           className={cn(
-            'w-full bg-slate-50 border rounded-3xl px-6 py-5 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none text-xl font-medium',
-            errors.jobDescription ? 'border-red-300' : 'border-slate-200',
+            'w-full bg-app-surface-muted border rounded-3xl px-6 py-5 text-app-text placeholder:text-app-text-muted focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none text-xl font-medium',
+            errors.jobDescription ? 'border-red-300' : 'border-app-border',
           )}
           placeholder={t('questionPlaceholder')}
           rows={4}
           aria-describedby="question-hint"
         />
         {errors.jobDescription && <p className="text-xs text-red-500 font-bold">{errors.jobDescription.message}</p>}
-        <p id="question-hint" className="text-xs text-slate-400 font-medium">{t('questionHint')}</p>
+        <p id="question-hint" className="text-xs text-app-text-muted font-medium">{t('questionHint')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -58,14 +58,14 @@ export function InterviewContextForm({ onNext }: { onNext: (data: InterviewConte
             <select
               id="job-role"
               {...register('companyBackground')}
-              className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-700 focus:ring-2 focus:ring-primary outline-none cursor-pointer font-medium text-lg"
+              className="w-full appearance-none bg-app-surface-muted border border-app-border rounded-2xl px-6 py-4 text-app-text focus:ring-2 focus:ring-primary outline-none cursor-pointer font-medium text-lg"
             >
               <option value="backend">{t('roleBackend')}</option>
               <option value="pm">{t('roleProduct')}</option>
               <option value="designer">{t('roleUX')}</option>
               <option value="data">{t('roleData')}</option>
             </select>
-            <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-6 h-6" />
+            <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-app-text-muted pointer-events-none w-6 h-6" />
           </div>
         </div>
 
@@ -75,7 +75,7 @@ export function InterviewContextForm({ onNext }: { onNext: (data: InterviewConte
             {TONE_OPTIONS.map((option) => (
               <label key={option.value} className="cursor-pointer">
                 <input type="radio" name="tone" value={option.value} className="hidden peer" defaultChecked={option.value === 'Professional'} />
-                <div className="px-6 py-3 rounded-2xl border border-slate-200 text-sm font-bold text-slate-600 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all shadow-sm">
+                <div className="px-6 py-3 rounded-2xl border border-app-border text-sm font-bold text-app-text-muted peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all shadow-sm">
                   {t(option.key)}
                 </div>
               </label>
@@ -84,41 +84,41 @@ export function InterviewContextForm({ onNext }: { onNext: (data: InterviewConte
         </div>
       </div>
 
-      <details className="group bg-slate-50/50 rounded-3xl border border-slate-100 overflow-hidden">
-        <summary className="flex items-center justify-between px-8 py-5 cursor-pointer list-none hover:bg-slate-100/50 transition-colors">
-          <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('advancedOptions')}</span>
-          <ChevronDown className="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" />
+      <details className="group bg-app-surface-muted/50 rounded-3xl border border-app-border overflow-hidden">
+        <summary className="flex items-center justify-between px-8 py-5 cursor-pointer list-none hover:bg-app-surface-muted/50 transition-colors">
+          <span className="text-xs font-black text-app-text-muted uppercase tracking-widest">{t('advancedOptions')}</span>
+          <ChevronDown className="w-5 h-5 text-app-text-muted transition-transform group-open:rotate-180" />
         </summary>
         <div className="px-8 pb-8 pt-2 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <label htmlFor="industry" className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('companyLabel')}</label>
-              <input id="industry" className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 text-sm font-medium focus:ring-2 focus:ring-primary outline-none" placeholder={t('companyPlaceholder')} />
+              <label htmlFor="industry" className="text-xs font-bold text-app-text-muted uppercase tracking-widest">{t('companyLabel')}</label>
+              <input id="industry" className="w-full bg-app-surface border border-app-border rounded-xl px-5 py-3 text-sm font-medium focus:ring-2 focus:ring-primary outline-none" placeholder={t('companyPlaceholder')} />
             </div>
             <div className="space-y-3">
-              <label htmlFor="interview-type" className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('interviewTypeLabel')}</label>
+              <label htmlFor="interview-type" className="text-xs font-bold text-app-text-muted uppercase tracking-widest">{t('interviewTypeLabel')}</label>
               <div className="relative">
-                <select id="interview-type" className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 text-sm font-medium appearance-none focus:ring-2 focus:ring-primary outline-none">
+                <select id="interview-type" className="w-full bg-app-surface border border-app-border rounded-xl px-5 py-3 text-sm font-medium appearance-none focus:ring-2 focus:ring-primary outline-none">
                   <option>{t('typeHR')}</option>
                   <option>{t('typeTech')}</option>
                 </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-4 h-4" />
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-app-text-muted pointer-events-none w-4 h-4" />
               </div>
             </div>
           </div>
         </div>
       </details>
 
-      <div className="flex flex-col md:flex-row items-center justify-between pt-10 border-t border-slate-100 gap-8">
+      <div className="flex flex-col md:flex-row items-center justify-between pt-10 border-t border-app-border gap-8">
         <label className="flex items-center gap-4 cursor-pointer group">
           <input type="checkbox" className="rounded-lg border-slate-300 text-primary focus:ring-primary h-6 w-6 transition-all" />
-          <span className="text-sm font-bold text-slate-500 group-hover:text-slate-700 transition-colors">{t('saveTemplate')}</span>
+          <span className="text-sm font-bold text-app-text-muted group-hover:text-app-text transition-colors">{t('saveTemplate')}</span>
         </label>
         <div className="flex items-center gap-4 w-full md:w-auto">
           <Button
             type="button"
             variant="outline"
-            className="flex-1 md:flex-none h-14 px-10 rounded-2xl font-bold border-slate-200 text-slate-600 hover:bg-slate-50"
+            className="flex-1 md:flex-none h-14 px-10 rounded-2xl font-bold border-app-border text-app-text-muted hover:bg-app-surface-muted"
           >
             {t('skipBtn')}
           </Button>
@@ -133,7 +133,7 @@ export function InterviewContextForm({ onNext }: { onNext: (data: InterviewConte
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-10 text-slate-400 pt-6">
+      <div className="flex justify-center items-center gap-10 text-app-text-muted pt-6">
         <div className="flex items-center gap-2.5">
           <Wand2 className="w-5 h-5" />
           <span className="text-[10px] uppercase font-black tracking-[0.15em]">{t('aiPowered')}</span>

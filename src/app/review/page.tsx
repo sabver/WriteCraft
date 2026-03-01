@@ -58,12 +58,12 @@ export default function ReviewPage() {
     return (
       <MainLayout>
         <PageWrapper className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center text-slate-400 mb-6">
+          <div className="w-20 h-20 bg-app-surface-muted rounded-3xl flex items-center justify-center text-app-text-muted mb-6">
             <BookOpen className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 mb-2">{t('emptyTitle')}</h2>
-          <p className="text-slate-500 font-medium mb-8 max-w-md">{t('emptyBody')}</p>
-          <Link href="/interview" className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all">
+          <h2 className="text-2xl font-black text-app-text mb-2">{t('emptyTitle')}</h2>
+          <p className="text-app-text-muted font-medium mb-8 max-w-md">{t('emptyBody')}</p>
+          <Link href="/interview" className="px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all">
             {t('startPracticeBtn')}
           </Link>
         </PageWrapper>
@@ -75,12 +75,12 @@ export default function ReviewPage() {
     return (
       <MainLayout>
         <PageWrapper className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mb-6">
+          <div className="w-20 h-20 bg-red-50 dark:bg-red-900/30 rounded-3xl flex items-center justify-center text-red-500 dark:text-red-400 mb-6">
             <AlertCircle className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 mb-2">{t('errorTitle')}</h2>
-          <p className="text-slate-500 font-medium mb-8 max-w-md">{error}</p>
-          <Link href="/interview" className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all">
+          <h2 className="text-2xl font-black text-app-text mb-2">{t('errorTitle')}</h2>
+          <p className="text-app-text-muted font-medium mb-8 max-w-md">{error}</p>
+          <Link href="/interview" className="px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all">
             {t('startPracticeBtn')}
           </Link>
         </PageWrapper>
@@ -93,21 +93,21 @@ export default function ReviewPage() {
       <PageWrapper>
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-1 font-display">{t('pageTitle')}</h2>
-            <p className="text-slate-500 text-lg font-medium">{t('pageSubtitle')}</p>
+            <h2 className="text-3xl font-black text-app-text tracking-tight mb-1 font-display">{t('pageTitle')}</h2>
+            <p className="text-app-text-muted text-lg font-medium">{t('pageSubtitle')}</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
-              <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">{t('aiBadge')}</div>
-              <div className="w-8 h-8 rounded-full border-2 border-white bg-green-100 flex items-center justify-center text-[10px] font-bold text-green-600">{t('youBadge')}</div>
+              <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-[10px] font-bold text-blue-600 dark:text-blue-400">{t('aiBadge')}</div>
+              <div className="w-8 h-8 rounded-full border-2 border-white bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-[10px] font-bold text-green-600 dark:text-green-400">{t('youBadge')}</div>
             </div>
-            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{t('analysisComplete')}</span>
+            <span className="text-sm font-bold text-app-text-muted uppercase tracking-widest">{t('analysisComplete')}</span>
           </div>
         </header>
 
         <ProgressStepper steps={steps} currentStep={3} />
 
-        <div className="border-b border-slate-200">
+        <div className="border-b border-app-border">
           <nav className="flex gap-8">
             <button className="border-b-2 border-primary text-primary py-4 px-1 inline-flex items-center gap-2 text-sm font-bold">
               {t('allIssues')}
@@ -122,13 +122,13 @@ export default function ReviewPage() {
           ))}
 
           {issues.length === 0 && (
-            <div className="bg-green-50 border border-green-100 rounded-[2.5rem] p-12 text-center space-y-6">
-              <div className="w-20 h-20 bg-green-100 rounded-3xl flex items-center justify-center text-green-600 mx-auto">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/40 rounded-[2.5rem] p-12 text-center space-y-6">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-3xl flex items-center justify-center text-green-600 dark:text-green-400 mx-auto">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-black text-slate-900">{t('successTitle')}</h3>
-                <p className="text-slate-600 font-medium">{t('successBody')}</p>
+                <h3 className="text-2xl font-black text-app-text">{t('successTitle')}</h3>
+                <p className="text-app-text-muted font-medium">{t('successBody')}</p>
               </div>
             </div>
           )}

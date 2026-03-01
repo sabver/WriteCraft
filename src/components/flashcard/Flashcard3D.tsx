@@ -39,24 +39,24 @@ function CorrectionItem({ issue }: CorrectionItemProps) {
       : reviewItemT('lowPriority');
 
   return (
-    <div className="rounded-2xl border border-slate-100 overflow-hidden">
+    <div className="rounded-2xl border border-app-border overflow-hidden">
       <button
         type="button"
         onClick={toggle}
         aria-expanded={isOpen}
-        className="w-full text-left px-4 py-3 flex items-start gap-3 min-h-[44px] hover:bg-slate-50 transition-colors"
+        className="w-full text-left px-4 py-3 flex items-start gap-3 min-h-[44px] hover:bg-app-surface-muted transition-colors"
       >
         <div className="flex-1 space-y-1.5 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">{t('originalLabel')}</span>
-            <span className="text-sm text-slate-500 font-medium truncate">{issue.original}</span>
+            <span className="text-[10px] font-bold text-app-text-muted uppercase tracking-widest shrink-0">{t('originalLabel')}</span>
+            <span className="text-sm text-app-text-muted font-medium truncate">{issue.original}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest shrink-0">{t('revisedLabel')}</span>
-            <span className="text-sm text-slate-900 font-semibold truncate">{issue.revised}</span>
+            <span className="text-sm text-app-text font-semibold truncate">{issue.revised}</span>
           </div>
         </div>
-        <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 mt-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-app-text-muted shrink-0 mt-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence initial={false}>
@@ -69,18 +69,18 @@ function CorrectionItem({ issue }: CorrectionItemProps) {
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-1 space-y-2 border-t border-slate-100 bg-slate-50">
-              <p className="text-xs font-black text-slate-700 uppercase tracking-widest">{issue.title}</p>
-              <p className="text-sm text-slate-600 leading-relaxed">{issue.reason}</p>
+            <div className="px-4 pb-4 pt-1 space-y-2 border-t border-app-border bg-app-surface-muted">
+              <p className="text-xs font-black text-app-text uppercase tracking-widest">{issue.title}</p>
+              <p className="text-sm text-app-text-muted leading-relaxed">{issue.reason}</p>
               <div className="flex items-center gap-2 pt-1">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wide">{issue.type}</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-app-surface-muted text-app-text-muted uppercase tracking-wide">{issue.type}</span>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
                     issue.severity === 'high'
-                      ? 'bg-red-100 text-red-600'
+                      ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                       : issue.severity === 'medium'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-green-100 text-green-700'
+                      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                   }`}
                 >
                   {severityText}
@@ -132,29 +132,29 @@ export function Flashcard3D({ front, back, sessionId, onFlip }: Flashcard3DProps
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         style={{ minHeight: isFlipped ? undefined : '450px' }}
       >
-        <div className="absolute inset-0 backface-hidden bg-white rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col items-center justify-center p-12 text-center overflow-hidden min-h-[450px]">
+        <div className="absolute inset-0 backface-hidden bg-app-surface rounded-[2.5rem] shadow-xl border border-app-border flex flex-col items-center justify-center p-12 text-center overflow-hidden min-h-[450px]">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 via-primary to-purple-500" />
           <BlockLabel className="mb-8">{t('sourceLabel')}</BlockLabel>
-          <p className="text-3xl md:text-4xl font-black text-slate-900 leading-tight font-display tracking-tight">{front}</p>
-          <div className="mt-12 flex items-center gap-2 text-slate-400 animate-pulse">
+          <p className="text-3xl md:text-4xl font-black text-app-text leading-tight font-display tracking-tight">{front}</p>
+          <div className="mt-12 flex items-center gap-2 text-app-text-muted animate-pulse">
             <span className="text-xs font-bold uppercase tracking-widest">{t('tapToReveal')}</span>
           </div>
         </div>
 
-        <div className="backface-hidden bg-white rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col p-10 rotate-y-180 min-h-[450px]">
+        <div className="backface-hidden bg-app-surface rounded-[2.5rem] shadow-xl border border-app-border flex flex-col p-10 rotate-y-180 min-h-[450px]">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 via-primary to-blue-400 rounded-t-[2.5rem]" />
 
           <div className="space-y-6 mt-2">
             <section>
               <BlockLabel className="mb-2">{t('translationLabel')}</BlockLabel>
-              <div className="bg-slate-50 rounded-2xl p-4 text-slate-700 font-medium border border-slate-100">{back.userTranslation}</div>
+              <div className="bg-app-surface-muted rounded-2xl p-4 text-app-text font-medium border border-app-border">{back.userTranslation}</div>
             </section>
 
             <section>
               <BlockLabel className="mb-3 text-primary">{t('aiRevisionLabel')}</BlockLabel>
 
               {back.issues.length === 0 ? (
-                <p className="text-sm text-slate-400 font-medium italic px-1">{t('noCorrections')}</p>
+                <p className="text-sm text-app-text-muted font-medium italic px-1">{t('noCorrections')}</p>
               ) : (
                 <div className="space-y-2">
                   {visibleIssues.map((issue) => (

@@ -29,8 +29,8 @@ export function TranslationPanel({ sourceText, aiReference, onSubmit, disabled =
           <BlockLabel>{t('sourceLabel')}</BlockLabel>
           <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded uppercase tracking-widest">{t('referenceBadge')}</span>
         </div>
-        <div className="bg-amber-50 border-2 border-amber-200 rounded-[2.5rem] p-10 shadow-inner">
-          <p className="text-2xl md:text-3xl font-black text-slate-800 leading-tight font-display tracking-tight">{sourceText}</p>
+        <div className="bg-amber-50 border-2 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50 rounded-[2.5rem] p-10 shadow-inner">
+          <p className="text-2xl md:text-3xl font-black text-app-text leading-tight font-display tracking-tight">{sourceText}</p>
         </div>
       </section>
 
@@ -40,7 +40,7 @@ export function TranslationPanel({ sourceText, aiReference, onSubmit, disabled =
           <span
             className={cn(
               'text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest transition-colors',
-              canSubmit ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400',
+              canSubmit ? 'bg-green-100 text-green-600' : 'bg-app-surface-muted text-app-text-muted',
             )}
           >
             {t('charCount', { count: translation.length })}
@@ -52,7 +52,7 @@ export function TranslationPanel({ sourceText, aiReference, onSubmit, disabled =
           value={translation}
           onChange={(e) => setTranslation(e.target.value)}
           placeholder={t('placeholder')}
-          className="w-full min-h-[240px] bg-white border-2 border-slate-200 rounded-[2.5rem] p-10 text-xl font-medium text-slate-700 placeholder-slate-300 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none leading-relaxed shadow-sm"
+          className="w-full min-h-[240px] bg-app-surface border-2 border-app-border rounded-[2.5rem] p-10 text-xl font-medium text-app-text placeholder:text-app-text-muted focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none leading-relaxed shadow-sm"
         />
       </section>
 
@@ -60,7 +60,7 @@ export function TranslationPanel({ sourceText, aiReference, onSubmit, disabled =
         <button
           type="button"
           onClick={() => setShowReference(!showReference)}
-          className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors text-sm font-bold group"
+          className="flex items-center gap-2 text-app-text-muted hover:text-primary transition-colors text-sm font-bold group"
           aria-expanded={showReference}
           aria-controls="ai-reference-content"
         >
@@ -69,8 +69,8 @@ export function TranslationPanel({ sourceText, aiReference, onSubmit, disabled =
         </button>
 
         {showReference && (
-          <div id="ai-reference-content" className="bg-slate-50 border border-slate-200 rounded-3xl p-8 animate-in fade-in slide-in-from-top-4 duration-300">
-            <p className="text-lg font-bold text-slate-600 italic leading-relaxed">{aiReference}</p>
+          <div id="ai-reference-content" className="bg-app-surface-muted border border-app-border rounded-3xl p-8 animate-in fade-in slide-in-from-top-4 duration-300">
+            <p className="text-lg font-bold text-app-text-muted italic leading-relaxed">{aiReference}</p>
           </div>
         )}
       </section>

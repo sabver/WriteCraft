@@ -58,8 +58,8 @@ export default function HistoryDetailPage({ params }: { params: Promise<{ id: st
           <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mb-6">
             <AlertCircle className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 mb-2">{t('notFoundTitle')}</h2>
-          <p className="text-slate-500 font-medium mb-8 max-w-md">{error ?? t('notFoundBody')}</p>
+          <h2 className="text-2xl font-black text-app-text mb-2">{t('notFoundTitle')}</h2>
+          <p className="text-app-text-muted font-medium mb-8 max-w-md">{error ?? t('notFoundBody')}</p>
           <Link href="/history" className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all">
             {t('backBtn')}
           </Link>
@@ -76,18 +76,18 @@ export default function HistoryDetailPage({ params }: { params: Promise<{ id: st
       <PageWrapper>
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            <Link href="/history" className="h-12 w-12 flex items-center justify-center rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all">
-              <ArrowLeft className="w-6 h-6 text-slate-600" />
+            <Link href="/history" className="h-12 w-12 flex items-center justify-center rounded-2xl border border-app-border hover:bg-app-surface-muted transition-all">
+              <ArrowLeft className="w-6 h-6 text-app-text-muted" />
             </Link>
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <SceneBadge type={scene} />
-                <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                <span className="text-xs font-bold text-app-text-muted flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {new Date(session.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight font-display">{t('pageTitle')}</h2>
+              <h2 className="text-2xl font-black text-app-text tracking-tight font-display">{t('pageTitle')}</h2>
             </div>
           </div>
 
@@ -103,14 +103,14 @@ export default function HistoryDetailPage({ params }: { params: Promise<{ id: st
         <div className="grid grid-cols-1 gap-8">
           <section className="space-y-4">
             <BlockLabel>{t('sourceLabel')}</BlockLabel>
-            <div className="bg-amber-50 border border-amber-100 rounded-3xl p-8 text-xl font-bold text-slate-800 leading-relaxed shadow-sm">
+            <div className="bg-amber-50 border border-amber-100 rounded-3xl p-8 text-xl font-bold text-app-text leading-relaxed shadow-sm">
               {session.sourceText}
             </div>
           </section>
 
           <section className="space-y-4">
             <BlockLabel>{t('translationLabel')}</BlockLabel>
-            <div className="bg-white border border-slate-200 rounded-3xl p-8 text-lg font-medium text-slate-700 leading-relaxed shadow-sm">
+            <div className="bg-app-surface border border-app-border rounded-3xl p-8 text-lg font-medium text-app-text leading-relaxed shadow-sm">
               {session.userTranslation}
             </div>
           </section>
@@ -121,7 +121,7 @@ export default function HistoryDetailPage({ params }: { params: Promise<{ id: st
               {issues.map((issue) => (
                 <ReviewItem key={issue.id} issue={issue} onGenerateFlashcard={() => {}} />
               ))}
-              {issues.length === 0 && <p className="text-slate-500 font-medium text-center py-8">{t('noIssues')}</p>}
+              {issues.length === 0 && <p className="text-app-text-muted font-medium text-center py-8">{t('noIssues')}</p>}
             </div>
           </section>
 
@@ -133,10 +133,10 @@ export default function HistoryDetailPage({ params }: { params: Promise<{ id: st
                   <Link
                     key={fid}
                     href="/flashcard/review"
-                    className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 shrink-0 hover:border-primary transition-all group"
+                    className="flex items-center gap-3 bg-app-surface border border-app-border rounded-2xl px-6 py-4 shrink-0 hover:border-primary transition-all group"
                   >
-                    <Layers className="w-5 h-5 text-slate-400 group-hover:text-primary" />
-                    <span className="text-sm font-bold text-slate-700">{t('flashcardN', { n: i + 1 })}</span>
+                    <Layers className="w-5 h-5 text-app-text-muted group-hover:text-primary" />
+                    <span className="text-sm font-bold text-app-text">{t('flashcardN', { n: i + 1 })}</span>
                   </Link>
                 ))}
               </div>

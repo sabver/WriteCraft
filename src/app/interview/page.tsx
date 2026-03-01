@@ -87,24 +87,24 @@ export default function InterviewPage() {
     <MainLayout>
       <PageWrapper>
         <div className="flex items-center gap-6">
-          <Link href="/" className="h-12 w-12 flex items-center justify-center rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
-            <ArrowLeft className="w-6 h-6 text-slate-600" />
+          <Link href="/" className="h-12 w-12 flex items-center justify-center rounded-2xl border border-app-border hover:bg-app-surface-muted transition-all shadow-sm">
+            <ArrowLeft className="w-6 h-6 text-app-text-muted" />
           </Link>
           <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight font-display">{t('pageTitle')}</h2>
-            <p className="text-slate-500 text-lg font-medium">{step === 0 ? t('step0') : step === 1 ? t('step1') : t('step2')}</p>
+            <h2 className="text-3xl font-black text-app-text tracking-tight font-display">{t('pageTitle')}</h2>
+            <p className="text-app-text-muted text-lg font-medium">{step === 0 ? t('step0') : step === 1 ? t('step1') : t('step2')}</p>
           </div>
         </div>
 
         <ProgressStepper steps={steps} currentStep={step} />
 
-        <div className="bg-white rounded-[3rem] border border-slate-200 shadow-sm p-8 md:p-12">
+        <div className="bg-app-surface rounded-[3rem] border border-app-border shadow-sm p-8 md:p-12">
           {step === 0 && <InterviewContextForm onNext={handleContextSubmit} />}
           {step === 1 && <SourceTextForm onNext={handleSourceSubmit} />}
           {step === 2 && (
             <>
               <TranslationPanel sourceText={sourceText} aiReference={sourceText} onSubmit={handleTranslationSubmit} disabled={submitting} />
-              {submitting && <p className="text-center text-sm font-medium text-slate-500 mt-4">{t('submitting')}</p>}
+              {submitting && <p className="text-center text-sm font-medium text-app-text-muted mt-4">{t('submitting')}</p>}
               {submitError && (
                 <div className="flex items-center gap-3 mt-4 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-medium">
                   <AlertCircle className="w-4 h-4 shrink-0" />

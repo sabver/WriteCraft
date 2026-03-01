@@ -65,25 +65,25 @@ export default function FlashcardGeneratePage() {
       <PageWrapper>
         <div className="max-w-4xl mx-auto space-y-10 pb-24">
           <header>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-1 font-display">{t('pageTitle')}</h2>
-            <p className="text-slate-500 text-lg font-medium">{t('pageSubtitle')}</p>
+            <h2 className="text-3xl font-black text-app-text tracking-tight mb-1 font-display">{t('pageTitle')}</h2>
+            <p className="text-app-text-muted text-lg font-medium">{t('pageSubtitle')}</p>
           </header>
 
           <ProgressStepper steps={steps} currentStep={4} />
 
-          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden p-10 space-y-8">
+          <div className="bg-app-surface rounded-[2.5rem] border border-app-border shadow-sm overflow-hidden p-10 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="space-y-1">
-                <h3 className="text-xl font-bold text-slate-900">{t('modeTitle')}</h3>
-                <p className="text-sm text-slate-500 font-medium">{t('modeSubtitle')}</p>
+                <h3 className="text-xl font-bold text-app-text">{t('modeTitle')}</h3>
+                <p className="text-sm text-app-text-muted font-medium">{t('modeSubtitle')}</p>
               </div>
-              <div className="flex bg-slate-100 p-1.5 rounded-2xl self-start md:self-center">
+              <div className="flex bg-app-surface-muted p-1.5 rounded-2xl self-start md:self-center">
                 <button
                   type="button"
                   onClick={() => setMode('paragraph')}
                   className={cn(
                     'px-6 py-2.5 rounded-xl text-sm font-bold transition-all',
-                    mode === 'paragraph' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                    mode === 'paragraph' ? 'bg-app-surface text-primary shadow-sm' : 'text-app-text-muted hover:text-app-text',
                   )}
                 >
                   {t('modeParagraph')}
@@ -93,7 +93,7 @@ export default function FlashcardGeneratePage() {
                   onClick={() => setMode('sentence')}
                   className={cn(
                     'px-6 py-2.5 rounded-xl text-sm font-bold transition-all',
-                    mode === 'sentence' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700',
+                    mode === 'sentence' ? 'bg-app-surface text-primary shadow-sm' : 'text-app-text-muted hover:text-app-text',
                   )}
                 >
                   {t('modeSentence')}
@@ -103,21 +103,21 @@ export default function FlashcardGeneratePage() {
 
             <div className="space-y-4">
               <BlockLabel>{t('previewTitle')}</BlockLabel>
-              <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 space-y-6">
+              <div className="border-2 border-dashed border-app-border rounded-3xl p-8 space-y-6">
                 <div className="space-y-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('frontLabel')}</span>
-                  <p className="text-xl font-bold text-slate-900">{previewFront}</p>
+                  <span className="text-[10px] font-bold text-app-text-muted uppercase tracking-widest">{t('frontLabel')}</span>
+                  <p className="text-xl font-bold text-app-text">{previewFront}</p>
                 </div>
-                <div className="h-px bg-slate-100" />
+                <div className="h-px bg-app-surface-muted" />
                 <div className="space-y-2">
                   <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{t('backLabel')}</span>
-                  <p className="text-slate-600 font-medium italic">{t('backHint')}</p>
+                  <p className="text-app-text-muted font-medium italic">{t('backHint')}</p>
                 </div>
               </div>
             </div>
 
             {saveError && (
-              <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-medium">
+              <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-medium dark:bg-red-900/30 dark:border-red-800 dark:text-red-400">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 {saveError}
               </div>
