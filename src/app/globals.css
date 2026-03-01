@@ -6,7 +6,7 @@
   --color-primary-foreground: #ffffff;
   --color-background-light: #f6f6f8;
   --color-background-dark: #111121;
-  
+
   --color-interview: #2563eb;
   --color-daily: #16a34a;
 
@@ -19,9 +19,42 @@
   --radius-2xl: 1rem;
 }
 
+/* Semantic theme tokens — runtime-dynamic, resolve via CSS custom properties */
+@theme inline {
+  --color-app-bg: var(--app-bg);
+  --color-app-surface: var(--app-surface);
+  --color-app-surface-muted: var(--app-surface-muted);
+  --color-app-border: var(--app-border);
+  --color-app-text: var(--app-text);
+  --color-app-text-muted: var(--app-text-muted);
+}
+
 @layer base {
+  /* Light theme values (default) */
+  :root,
+  .light {
+    --app-bg: #f6f6f8;
+    --app-surface: #ffffff;
+    --app-surface-muted: #f1f1f5;
+    --app-border: #e2e8f0;
+    --app-text: #0f172a;
+    --app-text-muted: #64748b;
+  }
+
+  /* Dark theme values */
+  .dark {
+    --app-bg: #111121;
+    --app-surface: #1c1c2e;
+    --app-surface-muted: #22223a;
+    --app-border: #2d2d48;
+    --app-text: #f1f1f3;
+    --app-text-muted: #8888a8;
+  }
+
   body {
-    @apply bg-background-light text-slate-900 antialiased;
+    background-color: var(--app-bg);
+    color: var(--app-text);
+    @apply antialiased;
   }
 }
 

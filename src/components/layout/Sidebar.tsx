@@ -37,7 +37,7 @@ export function Sidebar() {
   const t = useTranslations('nav');
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 shrink-0">
+    <aside className="w-64 bg-app-surface border-r border-app-border flex flex-col h-screen sticky top-0 shrink-0">
       <div className="p-6 flex items-center gap-3">
         <div className="bg-primary/10 rounded-xl p-2 flex items-center justify-center text-primary">
           <Edit3 className="w-6 h-6" />
@@ -61,13 +61,13 @@ export function Sidebar() {
                 "flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group",
                 isActive
                   ? "bg-primary text-white shadow-lg shadow-primary/20"
-                  : "text-slate-600 hover:bg-slate-50"
+                  : "text-app-text-muted hover:bg-app-surface-muted"
               )}
               aria-current={isActive ? 'page' : undefined}
             >
               <div className="flex items-center gap-3">
-                <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-400 group-hover:text-primary")} />
-                <span className={cn("text-[15px] font-semibold", isActive ? "text-white" : "text-slate-600")}>
+                <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-app-text-muted group-hover:text-primary")} />
+                <span className={cn("text-[15px] font-semibold", isActive ? "text-white" : "text-app-text-muted")}>
                   {t(item.key)}
                 </span>
               </div>
@@ -85,24 +85,24 @@ export function Sidebar() {
       </nav>
 
       <div className="px-4 py-2">
-        <div className="h-px bg-slate-100 my-2" />
+        <div className="h-px bg-app-border my-2" />
       </div>
 
       <div className="p-4 space-y-1">
         <Link
           href="/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition-all group"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-app-text-muted hover:bg-app-surface-muted transition-all group"
           aria-label={t('settings')}
         >
-          <Settings className="w-5 h-5 text-slate-400 group-hover:text-primary" />
+          <Settings className="w-5 h-5 text-app-text-muted group-hover:text-primary" />
           <span className="text-[15px] font-semibold">{t('settings')}</span>
         </Link>
         <Link
           href="/help"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition-all group"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-app-text-muted hover:bg-app-surface-muted transition-all group"
           aria-label={t('helpSupport')}
         >
-          <HelpCircle className="w-5 h-5 text-slate-400 group-hover:text-primary" />
+          <HelpCircle className="w-5 h-5 text-app-text-muted group-hover:text-primary" />
           <span className="text-[15px] font-semibold">{t('helpSupport')}</span>
         </Link>
 
@@ -114,22 +114,22 @@ export function Sidebar() {
           <LanguageSwitcher />
         </div>
 
-        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+        <div className="mt-4 pt-4 border-t border-app-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className="h-9 w-9 rounded-full bg-slate-200 bg-cover bg-center ring-2 ring-white shadow-sm"
+              className="h-9 w-9 rounded-full bg-app-surface-muted bg-cover bg-center ring-2 ring-app-border shadow-sm"
               style={{ backgroundImage: `url('https://picsum.photos/seed/user/100/100')` }}
               role="img"
               aria-label="User avatar"
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-slate-900 truncate max-w-[100px]">Jane Doe</span>
-              <span className="text-[11px] text-slate-500 truncate max-w-[100px]">jane@example.com</span>
+              <span className="text-sm font-bold text-app-text truncate max-w-[100px]">Jane Doe</span>
+              <span className="text-[11px] text-app-text-muted truncate max-w-[100px]">jane@example.com</span>
             </div>
           </div>
           <button
             type="button"
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-md hover:bg-slate-100 transition-colors"
+            className="text-app-text-muted hover:text-app-text p-1.5 rounded-md hover:bg-app-surface-muted transition-colors"
             aria-label={t('logout')}
           >
             <LogOut className="w-5 h-5" />
