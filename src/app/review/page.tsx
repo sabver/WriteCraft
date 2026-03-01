@@ -17,25 +17,20 @@ export default function ReviewPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadReview() {
-      try {
-        const source = "The new skyscraper is very big in the city center.";
-        const translation = "The new skyscraper is very big in the city center.";
-        const res = await fetch('/api/review', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ source, translation, scene: 'INTERVIEW', context: {} }),
-        });
-        if (!res.ok) throw new Error('Review request failed');
-        const { data } = await res.json();
-        setIssues(data);
-      } catch {
-        setError("Failed to load AI review. Please check your connection and try again.");
-      } finally {
-        setLoading(false);
-      }
+    const raw = sessionStorage.getItem('writecraft:session-draft');
+    if (!raw) {
+      setError('No active session. Please start a practice session first.');
+      setLoading(false);
+      return;
     }
-    loadReview();
+    try {
+      const draft = JSON.parse(raw) as { issues: ReviewIssue[] };
+      setIssues(draft.issues);
+    } catch {
+      setError('Session data is corrupted. Please start a new practice session.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   if (loading) {
@@ -62,20 +57,16 @@ export default function ReviewPage() {
           </div>
           <h2 className="text-2xl font-black text-slate-900 mb-2">Review Failed</h2>
           <p className="text-slate-500 font-medium mb-8 max-w-md">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
+          <Link
+            href="/interview"
             className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all"
           >
-            Retry Analysis
-          </button>
+            Start Practice
+          </Link>
         </PageWrapper>
       </MainLayout>
     );
   }
-
-  const handleGenerateSingle = (issue: ReviewIssue) => {
-    alert(`Flashcard generated for: ${issue.title}`);
-  };
 
   return (
     <MainLayout>
@@ -107,11 +98,7 @@ export default function ReviewPage() {
 
         <div className="flex flex-col gap-6">
           {issues.map((issue) => (
-            <ReviewItem 
-              key={issue.id} 
-              issue={issue} 
-              onGenerateFlashcard={handleGenerateSingle} 
-            />
+            <ReviewItem key={issue.id} issue={issue} />
           ))}
 
           {issues.length === 0 && (

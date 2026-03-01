@@ -9,7 +9,7 @@ import { BlockLabel } from '@/components/common/BlockLabel';
 
 interface ReviewItemProps {
   issue: ReviewIssue;
-  onGenerateFlashcard: (issue: ReviewIssue) => void;
+  onGenerateFlashcard?: (issue: ReviewIssue) => void;
 }
 
 export function ReviewItem({ issue, onGenerateFlashcard }: ReviewItemProps) {
@@ -59,16 +59,18 @@ export function ReviewItem({ issue, onGenerateFlashcard }: ReviewItemProps) {
         </div>
       </div>
       
-      <div className="bg-slate-50/50 px-10 py-6 border-t border-slate-100 flex justify-end">
-        <button 
-          type="button"
-          onClick={() => onGenerateFlashcard(issue)}
-          className="flex items-center gap-3 bg-white border border-slate-200 hover:border-primary text-slate-700 px-8 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-sm hover:shadow-md active:scale-95 group"
-        >
-          <Layers className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-          Generate Flashcard
-        </button>
-      </div>
+      {onGenerateFlashcard && (
+        <div className="bg-slate-50/50 px-10 py-6 border-t border-slate-100 flex justify-end">
+          <button
+            type="button"
+            onClick={() => onGenerateFlashcard(issue)}
+            className="flex items-center gap-3 bg-white border border-slate-200 hover:border-primary text-slate-700 px-8 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-sm hover:shadow-md active:scale-95 group"
+          >
+            <Layers className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+            Generate Flashcard
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ProgressStepper } from '@/components/common/ProgressStepper';
-import { ArrowRight, Check, Layers } from 'lucide-react';
+import { ArrowRight, Check, Layers, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { saveFlashcards } from '@/services/flashcard';
@@ -11,28 +11,84 @@ import { BlockLabel } from '@/components/common/BlockLabel';
 import { ActionBar } from '@/components/common/ActionBar';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/MainLayout';
+import type { ReviewIssue, SceneType, Flashcard } from '@/lib/types';
+
+interface SessionDraft {
+  sessionId: string;
+  scene: 'INTERVIEW' | 'DAILY';
+  context: Record<string, string>;
+  sourceText: string;
+  userTranslation: string;
+  issues: ReviewIssue[];
+}
+
+type FlashcardInput = Omit<Flashcard, 'id' | 'createdAt' | 'interval' | 'easeFactor' | 'nextReviewDate'>;
+
+function buildCards(draft: SessionDraft, mode: 'paragraph' | 'sentence'): FlashcardInput[] {
+  const scene = draft.scene.toLowerCase() as SceneType;
+  if (mode === 'paragraph') {
+    return [{
+      sessionId: draft.sessionId,
+      front: draft.sourceText,
+      back: {
+        userTranslation: draft.userTranslation,
+        aiRevision: draft.issues[0]?.revised ?? draft.userTranslation,
+        feedbackSummary: draft.issues.map(i => i.title).slice(0, 3),
+      },
+      scene,
+      context: draft.context,
+    }];
+  }
+  return draft.issues.map(iss => ({
+    sessionId: draft.sessionId,
+    front: iss.original,
+    back: {
+      userTranslation: iss.original,
+      aiRevision: iss.revised,
+      feedbackSummary: [iss.reason],
+    },
+    scene,
+    context: draft.context,
+  }));
+}
+
+function readDraft(): SessionDraft | null {
+  if (typeof window === 'undefined') return null;
+  const raw = sessionStorage.getItem('writecraft:session-draft');
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as SessionDraft;
+  } catch {
+    return null;
+  }
+}
 
 export default function FlashcardGeneratePage() {
   const [mode, setMode] = useState<'paragraph' | 'sentence'>('paragraph');
   const [saved, setSaved] = useState(false);
+  const [draft] = useState<SessionDraft | null>(readDraft);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSave = async () => {
-    // Mock saving
-    await saveFlashcards([
-      {
-        sessionId: '1',
-        front: "The new skyscraper is very big in the city center.",
-        back: {
-          userTranslation: "The new skyscraper is very big in the city center.",
-          aiRevision: "The new skyscraper is enormous in the city center.",
-          feedbackSummary: ["Use 'enormous' for better precision.", "Avoid 'very big' in professional contexts."]
-        },
-        scene: 'interview',
-        context: { role: 'Backend Engineer' },
-      }
-    ]);
-    setSaved(true);
+    if (!draft) return;
+    setSaveError(null);
+    const cards = buildCards(draft, mode);
+    if (cards.length === 0) {
+      setSaveError('No issues to generate cards from.');
+      return;
+    }
+    try {
+      await saveFlashcards(cards);
+      sessionStorage.removeItem('writecraft:session-draft');
+      setSaved(true);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save flashcards. Please try again.');
+    }
   };
+
+  const previewFront = draft
+    ? (mode === 'paragraph' ? draft.sourceText : (draft.issues[0]?.original ?? draft.sourceText))
+    : 'No active session — please start a practice session first.';
 
   return (
     <MainLayout>
@@ -80,15 +136,22 @@ export default function FlashcardGeneratePage() {
             <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 space-y-6">
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Front</span>
-                <p className="text-xl font-bold text-slate-900">The new skyscraper is very big in the city center.</p>
+                <p className="text-xl font-bold text-slate-900">{previewFront}</p>
               </div>
               <div className="h-px bg-slate-100" />
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Back</span>
-                <p className="text-slate-600 font-medium italic">Click to expand preview...</p>
+                <p className="text-slate-600 font-medium italic">AI revision + feedback summary</p>
               </div>
             </div>
           </div>
+
+          {saveError && (
+            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {saveError}
+            </div>
+          )}
         </div>
 
         <ActionBar>
@@ -101,8 +164,9 @@ export default function FlashcardGeneratePage() {
               </Link>
             </Button>
           ) : (
-            <Button 
+            <Button
               onClick={handleSave}
+              disabled={!draft}
               size="lg"
               className="px-10 py-7 rounded-2xl font-black shadow-xl shadow-primary/30 text-white"
             >

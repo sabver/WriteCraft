@@ -11,9 +11,10 @@ interface TranslationPanelProps {
   sourceText: string;
   aiReference: string;
   onSubmit: (translation: string) => void;
+  disabled?: boolean;
 }
 
-export function TranslationPanel({ sourceText, aiReference, onSubmit }: TranslationPanelProps) {
+export function TranslationPanel({ sourceText, aiReference, onSubmit, disabled = false }: TranslationPanelProps) {
   const [translation, setTranslation] = useState('');
   const [showReference, setShowReference] = useState(false);
 
@@ -80,7 +81,7 @@ export function TranslationPanel({ sourceText, aiReference, onSubmit }: Translat
       <ActionBar>
         <Button
           onClick={() => onSubmit(translation)}
-          disabled={!canSubmit}
+          disabled={!canSubmit || disabled}
           size="lg"
           className="px-12 py-7 rounded-full text-xl font-black shadow-2xl shadow-primary/40 text-white"
         >
