@@ -287,18 +287,18 @@ pnpm exec playwright test e2e/theme.spec.ts
 - [x] T05 - Add ThemeSwitcher to Sidebar
 
 ### Phase 2
-- [ ] T06 - Global theme tokens
-- [ ] T07 - Shared layout surfaces
-- [ ] T08 - Dashboard theming [P]
-- [ ] T09 - Daily flow theming [P]
-- [ ] T10 - Interview flow theming [P]
-- [ ] T11 - Review flow theming [P]
-- [ ] T12 - History flow theming [P]
-- [ ] T13 - Flashcard flow theming [P]
+- [x] T06 - Global theme tokens
+- [x] T07 - Shared layout surfaces
+- [x] T08 - Dashboard theming [P]
+- [x] T09 - Daily flow theming [P]
+- [x] T10 - Interview flow theming [P]
+- [x] T11 - Review flow theming [P]
+- [x] T12 - History flow theming [P]
+- [x] T13 - Flashcard flow theming [P]
 
 ### Phase 3
-- [ ] T14 - TEST FIRST persistence integration test
-- [ ] T15 - Make persistence integration test green
+- [x] T14 - TEST FIRST persistence integration test
+- [x] T15 - Make persistence integration test green
 - [ ] T16 - Manual visual QA checklist
-- [ ] T17 - Full regression baseline
-- [ ] T18 - E2E theme journeys (optional)
+- [x] T17 - Full regression baseline
+- [x] T18 - E2E theme journeys (optional)
