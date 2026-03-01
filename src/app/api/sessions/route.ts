@@ -104,10 +104,11 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
+    const contextSchema = z.record(z.string(), z.string()).catch({})
     const data = sessions.map((s) => ({
       id: s.id,
       scene: s.scene,
-      context: s.context as Record<string, string>,
+      context: contextSchema.parse(s.context),
       sourceText: s.sourceText,
       userTranslation: s.userTranslation,
       issueCount: s._count.issues,

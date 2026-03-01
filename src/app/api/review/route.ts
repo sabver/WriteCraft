@@ -5,8 +5,8 @@ import { z } from "zod";
 const RequestSchema = z.object({
   source: z.string().min(1),
   translation: z.string().min(1),
-  scene: z.string().min(1),
-  context: z.record(z.string()).default({}),
+  scene: z.enum(['INTERVIEW', 'DAILY']),
+  context: z.record(z.string(), z.string()).default({}),
 });
 
 export async function POST(request: NextRequest) {

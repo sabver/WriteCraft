@@ -148,6 +148,14 @@ describe('GET /api/sessions', () => {
     expect(body.data[0].sourceText).toBe('Tell me about yourself.')
   })
 
+  it('returns 400 for an invalid ?scene= value', async () => {
+    const req = new NextRequest(`${BASE_URL}/api/sessions?scene=INVALID`)
+    const res = await GET(req)
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+  })
+
   it('filters by ?q= keyword (case-insensitive)', async () => {
     await createSessionViaPost(makeSession({ sourceText: 'introduce yourself' }))
     await createSessionViaPost(makeSession({ sourceText: 'describe your experience' }))

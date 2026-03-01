@@ -13,10 +13,13 @@ import { useRouter } from 'next/navigation';
 
 export default function InterviewPage() {
   const [step, setStep] = useState(0);
+  // context captured here; consumed by createSession in T-18
+  const [_context, setContext] = useState<Record<string, string>>({});
   const [sourceText, setSourceText] = useState('');
   const router = useRouter();
 
-  const handleContextSubmit = () => {
+  const handleContextSubmit = (data: { jobDescription: string; companyBackground: string; questionType: string }) => {
+    setContext(data);
     setStep(1);
   };
 

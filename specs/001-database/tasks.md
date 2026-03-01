@@ -475,6 +475,34 @@ pnpm run lint
 
 ---
 
+### T-11a · Implement POST /api/review (server-side AI proxy)
+
+**Goal**: Move AI review calls off the client so `GEMINI_API_KEY` is never exposed
+to the browser. Introduced as a fix alongside T-11/T-12.
+
+**Spec refs**: AC-1.2 (AI feedback stored per session), NFR-6 (no secrets in client)
+
+**Files touched**:
+- `src/app/api/review/route.ts` (new)
+- `src/services/ai.ts` — env var renamed from `NEXT_PUBLIC_GEMINI_API_KEY` → `GEMINI_API_KEY`
+- `.env.example`, `.env.local.example`, `tasks.md` — env var updated
+
+**Key implementation points**:
+- Zod schema: `source`, `translation` (strings), `scene` (`z.enum(['INTERVIEW','DAILY'])`),
+  `context` (`z.record(z.string(), z.string())`)
+- Delegates to `getAIReview()` in `src/services/ai.ts`
+- 400 on Zod failure; 500 on AI error
+
+**Validation**:
+```bash
+pnpm run lint
+pnpm exec tsc --noEmit
+```
+
+**Status**: ✅ Implemented (commit 9111de7); tests pending (add to Phase 5 or a dedicated test file)
+
+---
+
 ## Phase 5 — Flashcards API Routes (TDD)
 
 ### T-14 · [TEST] Write flashcards route tests
@@ -777,6 +805,7 @@ Implements spec 001-database (AC-1.1 through AC-7.1)
 | T-10 Session route tests | Sessions API | — | ✓ RED | AC-1.1–1.3, AC-2.1–2.5 |
 | T-11 POST /api/sessions | Sessions API | — | GREEN | AC-1.1, AC-1.2 |
 | T-12 GET /api/sessions | Sessions API | — | GREEN | AC-2.1–2.5 |
+| T-11a POST /api/review | Sessions API | — | — | AC-1.2, NFR-6 |
 | T-13 GET /api/sessions/[id] | Sessions API | — | GREEN | AC-1.3, AC-3.2, AC-6.1 |
 | T-14 Flashcard route tests | Flashcards API | — | ✓ RED | AC-3.1–3.4, AC-4.1–4.3, AC-5.1–5.3, AC-7.1 |
 | T-15 POST /api/flashcards | Flashcards API | ✓ | GREEN | AC-3.1, AC-3.3, AC-3.4 |
@@ -812,6 +841,7 @@ Implements spec 001-database (AC-1.1 through AC-7.1)
 - [x] T-10 Session route tests (RED → confirmed fail) ✅
 - [x] T-11 POST /api/sessions ✅
 - [x] T-12 GET /api/sessions ✅
+- [x] T-11a POST /api/review (server-side AI proxy) ✅ — env var secured, scene enum-validated
 - [x] T-13 GET /api/sessions/[id] ✅ — 13/13 integration tests green
 - [ ] T-14 Flashcard route tests (RED)
 - [ ] T-15 POST /api/flashcards

@@ -13,10 +13,13 @@ import { useRouter } from 'next/navigation';
 
 export default function DailyPage() {
   const [step, setStep] = useState(0);
+  // context captured here; consumed by createSession in T-18
+  const [_context, setContext] = useState<Record<string, string>>({});
   const [sourceText, setSourceText] = useState('');
   const router = useRouter();
 
-  const handleContextSubmit = () => {
+  const handleContextSubmit = (data: { setting?: string; formality?: string }) => {
+    setContext({ setting: data.setting ?? '', formality: data.formality ?? '' });
     setStep(1);
   };
 
