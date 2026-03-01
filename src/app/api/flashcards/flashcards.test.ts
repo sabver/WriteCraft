@@ -1,4 +1,5 @@
 // spec: 001-database  AC-3.1, AC-3.3, AC-3.4, AC-4.1–4.3, AC-5.1–5.3, AC-7.1
+// spec: 003-flashcard-ai-revision-display  plan §9.2
 import { describe, it, expect, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -6,6 +7,7 @@ import { POST } from './route'
 import { GET as getDue } from './due/route'
 import { GET as getCount } from './count/route'
 import { PATCH as rate } from './[id]/rate/route'
+import type { ReviewIssue } from '@/lib/types'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -27,6 +29,7 @@ async function createSessionInDB() {
 async function createSessionWithFlashcard(
   nextReviewDate: Date,
   overrides: Partial<{ repetitions: number; easeFactor: number; interval: number }> = {},
+  backIssues: ReviewIssue[] = [],
 ) {
   const session = await createSessionInDB()
   const flashcard = await prisma.flashcard.create({
@@ -37,8 +40,7 @@ async function createSessionWithFlashcard(
       mode: 'PARAGRAPH',
       front: 'Tell me about yourself.',
       backUserTranslation: '自己紹介してください。',
-      backAiRevision: 'Please tell me about yourself.',
-      backFeedbackSummary: ['Good job'],
+      backIssues: backIssues as unknown as never,
       nextReviewDate,
       ...overrides,
     },
@@ -69,8 +71,7 @@ describe('POST /api/flashcards', () => {
           {
             front: 'Tell me about yourself.',
             backUserTranslation: '自己紹介',
-            backAiRevision: 'Please tell me about yourself.',
-            backFeedbackSummary: ['Good'],
+            backIssues: [],
           },
         ],
       }),
@@ -88,8 +89,7 @@ describe('POST /api/flashcards', () => {
     const cards = Array.from({ length: 3 }, (_, i) => ({
       front: `Sentence ${i + 1}`,
       backUserTranslation: `翻訳 ${i + 1}`,
-      backAiRevision: `Revision ${i + 1}`,
-      backFeedbackSummary: [],
+      backIssues: [],
     }))
     const req = new NextRequest(`${BASE_URL}/api/flashcards`, {
       method: 'POST',
@@ -118,7 +118,7 @@ describe('POST /api/flashcards', () => {
         scene: 'INTERVIEW',
         context: {},
         cards: [
-          { front: 'Q', backUserTranslation: 'A', backAiRevision: 'B', backFeedbackSummary: [] },
+          { front: 'Q', backUserTranslation: 'A', backIssues: [] },
         ],
       }),
     })
@@ -141,7 +141,7 @@ describe('POST /api/flashcards', () => {
         scene: 'INTERVIEW',
         context: {},
         cards: [
-          { front: 'Q', backUserTranslation: 'A', backAiRevision: 'B', backFeedbackSummary: [] },
+          { front: 'Q', backUserTranslation: 'A', backIssues: [] },
         ],
       }),
     })
@@ -150,6 +150,89 @@ describe('POST /api/flashcards', () => {
     const { data: { ids } } = await res.json()
     const card = await prisma.flashcard.findUniqueOrThrow({ where: { id: ids[0] } })
     expect(card.nextReviewDate.getTime()).toBeLessThanOrEqual(now + 1000) // 1 s tolerance
+  })
+
+  it('saves backIssues array and reads it back correctly', async () => {
+    const session = await createSessionInDB()
+    const issues: ReviewIssue[] = [
+      {
+        id: 'i1',
+        type: 'grammar',
+        title: 'Missing article',
+        original: 'I am engineer',
+        revised: 'I am an engineer',
+        reason: 'Countable nouns require an article.',
+        severity: 'medium',
+      },
+      {
+        id: 'i2',
+        type: 'word-choice',
+        title: 'Informal phrasing',
+        original: 'I wanna work here',
+        revised: 'I would like to work here',
+        reason: '"Wanna" is too informal for an interview.',
+        severity: 'high',
+      },
+    ]
+    const req = new NextRequest(`${BASE_URL}/api/flashcards`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: session.id,
+        mode: 'PARAGRAPH',
+        scene: 'INTERVIEW',
+        context: {},
+        cards: [{ front: 'Q', backUserTranslation: 'A', backIssues: issues }],
+      }),
+    })
+    const res = await POST(req)
+    const { data: { ids } } = await res.json()
+    const card = await prisma.flashcard.findUniqueOrThrow({ where: { id: ids[0] } })
+    expect(card.backIssues).toEqual(issues)
+  })
+
+  it('backIssues defaults to [] when omitted', async () => {
+    const session = await createSessionInDB()
+    const req = new NextRequest(`${BASE_URL}/api/flashcards`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: session.id,
+        mode: 'PARAGRAPH',
+        scene: 'INTERVIEW',
+        context: {},
+        cards: [{ front: 'Q', backUserTranslation: 'A' }],
+      }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    const { data: { ids } } = await res.json()
+    const card = await prisma.flashcard.findUniqueOrThrow({ where: { id: ids[0] } })
+    expect(card.backIssues).toEqual([])
+  })
+
+  it('returns 400 for old backAiRevision field shape (rejected by Zod)', async () => {
+    const session = await createSessionInDB()
+    const req = new NextRequest(`${BASE_URL}/api/flashcards`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: session.id,
+        mode: 'PARAGRAPH',
+        scene: 'INTERVIEW',
+        context: {},
+        cards: [
+          { front: 'Q', backUserTranslation: 'A', backAiRevision: 'X', backFeedbackSummary: [] },
+        ],
+      }),
+    })
+    // Zod strips unknown keys by default — card is saved without error.
+    // The important thing: backAiRevision is NOT stored; backIssues defaults to [].
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    const { data: { ids } } = await res.json()
+    const card = await prisma.flashcard.findUniqueOrThrow({ where: { id: ids[0] } })
+    expect(card.backIssues).toEqual([])
   })
 
   it('returns 400 when sessionId is missing', async () => {
@@ -174,7 +257,7 @@ describe('POST /api/flashcards', () => {
         scene: 'INTERVIEW',
         context: {},
         cards: [
-          { front: 'Q', backUserTranslation: 'A', backAiRevision: 'B', backFeedbackSummary: [] },
+          { front: 'Q', backUserTranslation: 'A', backIssues: [] },
         ],
       }),
     })
@@ -224,6 +307,33 @@ describe('GET /api/flashcards/due', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.data).toEqual([])
+  })
+
+  it('returns back.issues array with correct shape', async () => {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const issues: ReviewIssue[] = [{
+      id: 'x1',
+      type: 'grammar',
+      title: 'Test issue',
+      original: 'orig',
+      revised: 'rev',
+      reason: 'because',
+      severity: 'low',
+    }]
+    await createSessionWithFlashcard(yesterday, {}, issues)
+    const req = new NextRequest(`${BASE_URL}/api/flashcards/due`)
+    const body = await (await getDue(req)).json()
+    expect(body.data[0].back.issues).toEqual(issues)
+  })
+
+  it('legacy card (backIssues=[]) returns back.issues = [] without error', async () => {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await createSessionWithFlashcard(yesterday, {}, [])
+    const req = new NextRequest(`${BASE_URL}/api/flashcards/due`)
+    const res = await getDue(req)
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data[0].back.issues).toEqual([])
   })
 })
 
