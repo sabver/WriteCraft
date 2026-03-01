@@ -1,7 +1,7 @@
 # Spec: UI Integration — Wire Pages to Real APIs
 
 **Feature ID**: 002-ui-integration
-**Status**: Draft
+**Status**: Implemented
 **Created**: 2026-03-01
 **Depends on**: 001-database (all API routes + service layer complete)
 
