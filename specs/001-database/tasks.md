@@ -843,10 +843,10 @@ Implements spec 001-database (AC-1.1 through AC-7.1)
 - [x] T-12 GET /api/sessions ✅
 - [x] T-11a POST /api/review (server-side AI proxy) ✅ — env var secured, scene enum-validated
 - [x] T-13 GET /api/sessions/[id] ✅ — 13/13 integration tests green
-- [ ] T-14 Flashcard route tests (RED)
-- [ ] T-15 POST /api/flashcards
-- [ ] T-16 GET due + count
-- [ ] T-17 PATCH rate
+- [x] T-14 Flashcard route tests (RED) ✅ — 14 tests, confirmed module-not-found fail
+- [x] T-15 POST /api/flashcards ✅
+- [x] T-16 GET due + count ✅
+- [x] T-17 PATCH rate ✅
 - [ ] T-18 sessions.ts service
 - [ ] T-19 navigation.ts service
 - [ ] T-20 flashcard.ts update
