@@ -7,19 +7,20 @@ import { ProgressStepper } from '@/components/common/ProgressStepper';
 import { PageWrapper } from '@/components/common/PageWrapper';
 import { ActionBar } from '@/components/common/ActionBar';
 import { SkeletonCard } from '@/components/common/SkeletonCard';
-import { CheckCircle2, Sparkles, ArrowRight, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Sparkles, ArrowRight, AlertCircle, BookOpen } from 'lucide-react';
 import { ReviewIssue } from '@/lib/types';
 import Link from 'next/link';
 
 export default function ReviewPage() {
   const [issues, setIssues] = useState<ReviewIssue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [noSession, setNoSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const raw = sessionStorage.getItem('writecraft:session-draft');
     if (!raw) {
-      setError('No active session. Please start a practice session first.');
+      setNoSession(true);
       setLoading(false);
       return;
     }
@@ -48,6 +49,26 @@ export default function ReviewPage() {
     );
   }
 
+  if (noSession) {
+    return (
+      <MainLayout>
+        <PageWrapper className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center text-slate-400 mb-6">
+            <BookOpen className="w-10 h-10" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 mb-2">No review yet</h2>
+          <p className="text-slate-500 font-medium mb-8 max-w-md">Complete a practice session first, and your AI feedback will appear here.</p>
+          <Link
+            href="/interview"
+            className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all"
+          >
+            Start Practice
+          </Link>
+        </PageWrapper>
+      </MainLayout>
+    );
+  }
+
   if (error) {
     return (
       <MainLayout>
@@ -55,7 +76,7 @@ export default function ReviewPage() {
           <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mb-6">
             <AlertCircle className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 mb-2">Review Failed</h2>
+          <h2 className="text-2xl font-black text-slate-900 mb-2">Something went wrong</h2>
           <p className="text-slate-500 font-medium mb-8 max-w-md">{error}</p>
           <Link
             href="/interview"
