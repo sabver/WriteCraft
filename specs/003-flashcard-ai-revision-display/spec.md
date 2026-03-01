@@ -1,6 +1,6 @@
 # Spec 003 — Flashcard AI Revision: Show All Changes with Detail View
 
-**Status:** Ready for Plan
+**Status:** Implemented
 **Created:** 2026-03-01
 
 ---

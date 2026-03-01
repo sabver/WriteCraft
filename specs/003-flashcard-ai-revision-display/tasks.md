@@ -2,7 +2,7 @@
 
 **Spec:** specs/003-flashcard-ai-revision-display/spec.md
 **Plan:** specs/003-flashcard-ai-revision-display/plan.md
-**Status:** Not started
+**Status:** Done
 **Created:** 2026-03-01
 
 ---
@@ -291,20 +291,20 @@ pnpm vitest run
 
 ## Progress
 
-- [ ] T-01 Extract `buildCards` to `src/lib/buildCards.ts`
-- [ ] T-02 Write failing `buildCards` tests (RED)
-- [ ] T-03 Update Prisma schema
-- [ ] T-04 Generate + apply migration
-- [ ] T-05 Update TypeScript types
-- [ ] T-06 Update POST `/api/flashcards` route
-- [ ] T-07 Update GET `/api/flashcards/due` route
-- [ ] T-08 Update service layer
-- [ ] T-09 Rewrite `buildCards` implementation (GREEN)
-- [ ] T-10 Rewrite `Flashcard3D` component
-- [ ] T-11 Update review page
-- [ ] T-12 Update existing integration tests
-- [ ] T-13 Full lint pass
-- [ ] T-14 Full type-check pass
-- [ ] T-15 Full test suite
-- [ ] T-16 Build check
-- [ ] T-17 Update spec status
+- [x] T-01 Extract `buildCards` to `src/lib/buildCards.ts`
+- [x] T-02 Write failing `buildCards` tests (RED)
+- [x] T-03 Update Prisma schema
+- [x] T-04 Generate + apply migration
+- [x] T-05 Update TypeScript types
+- [x] T-06 Update POST `/api/flashcards` route
+- [x] T-07 Update GET `/api/flashcards/due` route
+- [x] T-08 Update service layer
+- [x] T-09 Rewrite `buildCards` implementation (GREEN)
+- [x] T-10 Rewrite `Flashcard3D` component
+- [x] T-11 Update review page
+- [x] T-12 Update existing integration tests
+- [x] T-13 Full lint pass
+- [x] T-14 Full type-check pass
+- [x] T-15 Full test suite
+- [x] T-16 Build check
+- [x] T-17 Update spec status
