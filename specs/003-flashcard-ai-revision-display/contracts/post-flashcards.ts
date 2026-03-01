@@ -3,7 +3,7 @@
 
 // ─── Request Body ─────────────────────────────────────────────────────────────
 
-interface PostFlashcardsRequest {
+export interface PostFlashcardsRequest {
   sessionId: string
   mode: 'PARAGRAPH' | 'SENTENCE'
   scene: 'INTERVIEW' | 'DAILY'
@@ -26,14 +26,14 @@ interface PostFlashcardsRequest {
 
 // ─── Response (201) ───────────────────────────────────────────────────────────
 
-interface PostFlashcardsResponse {
+export interface PostFlashcardsResponse {
   success: true
   data: { ids: string[] }
 }
 
 // ─── Response (400) ───────────────────────────────────────────────────────────
 
-interface PostFlashcardsError {
+export interface PostFlashcardsError {
   success: false
   error: string
 }

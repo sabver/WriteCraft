@@ -116,9 +116,10 @@ export default function FlashcardReviewPage() {
         </header>
 
         <div className="flex-1 flex flex-col items-center justify-center gap-12 min-h-[500px]">
-          <Flashcard3D 
-            front={currentCard.front} 
-            back={currentCard.back} 
+          <Flashcard3D
+            front={currentCard.front}
+            back={currentCard.back}
+            sessionId={currentCard.sessionId}
             onFlip={setIsFlipped}
           />
 

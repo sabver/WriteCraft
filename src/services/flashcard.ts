@@ -17,8 +17,7 @@ export async function saveFlashcards(
     cards: cards.map((c) => ({
       front: c.front,
       backUserTranslation: c.back.userTranslation,
-      backAiRevision: c.back.aiRevision,
-      backFeedbackSummary: c.back.feedbackSummary,
+      backIssues: c.back.issues,
     })),
   }
 

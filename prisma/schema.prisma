@@ -87,8 +87,7 @@ model Flashcard {
   // Card faces
   front               String @db.Text
   backUserTranslation String @db.Text
-  backAiRevision      String @db.Text
-  backFeedbackSummary Json   // string[] max 3 items
+  backIssues          Json   @default("[]") // ReviewIssue[]  spec: 003 §4.1
 
   // SM-2 scheduling state  [spec: AC-3.1, AC-5.2]
   interval       Int      @default(1)     // days until next review

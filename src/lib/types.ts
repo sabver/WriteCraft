@@ -35,8 +35,7 @@ export interface Flashcard {
   front: string;
   back: {
     userTranslation: string;
-    aiRevision: string;
-    feedbackSummary: string[];
+    issues: ReviewIssue[]; // spec: 003 §4.3
   };
   scene: SceneType;
   context: Record<string, string>;
@@ -111,7 +110,6 @@ export interface SaveFlashcardsInput {
   cards: Array<{
     front: string
     backUserTranslation: string
-    backAiRevision: string
-    backFeedbackSummary: string[]
+    backIssues: ReviewIssue[] // spec: 003 §4.3
   }>
 }

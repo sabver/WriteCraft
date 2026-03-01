@@ -1,9 +1,20 @@
 // spec: 001-database  AC-3.1, AC-3.3, AC-3.4
+// spec: 003-flashcard-ai-revision-display  plan §4.1
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 
 // ─── Validation schema ────────────────────────────────────────────────────────
+
+const issueSchema = z.object({
+  id: z.string(),
+  type: z.enum(['grammar', 'word-choice', 'structure']),
+  title: z.string(),
+  original: z.string(),
+  revised: z.string(),
+  reason: z.string(),
+  severity: z.enum(['high', 'medium', 'low']),
+})
 
 const SaveFlashcardsSchema = z.object({
   sessionId: z.string().min(1),
@@ -14,8 +25,7 @@ const SaveFlashcardsSchema = z.object({
     z.object({
       front: z.string().min(1),
       backUserTranslation: z.string(),
-      backAiRevision: z.string(),
-      backFeedbackSummary: z.array(z.string()),
+      backIssues: z.array(issueSchema).default([]),
     }),
   ),
 })
@@ -52,8 +62,7 @@ export async function POST(request: NextRequest) {
             mode: input.mode,
             front: card.front,
             backUserTranslation: card.backUserTranslation,
-            backAiRevision: card.backAiRevision,
-            backFeedbackSummary: card.backFeedbackSummary,
+            backIssues: card.backIssues,
             // SM-2 defaults  [spec: AC-3.1]
             interval: 1,
             easeFactor: 2.5,

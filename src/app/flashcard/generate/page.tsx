@@ -11,46 +11,8 @@ import { BlockLabel } from '@/components/common/BlockLabel';
 import { ActionBar } from '@/components/common/ActionBar';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/MainLayout';
-import type { ReviewIssue, SceneType, Flashcard } from '@/lib/types';
-
-interface SessionDraft {
-  sessionId: string;
-  scene: 'INTERVIEW' | 'DAILY';
-  context: Record<string, string>;
-  sourceText: string;
-  userTranslation: string;
-  issues: ReviewIssue[];
-}
-
-type FlashcardInput = Omit<Flashcard, 'id' | 'createdAt' | 'interval' | 'easeFactor' | 'nextReviewDate'>;
-
-function buildCards(draft: SessionDraft, mode: 'paragraph' | 'sentence'): FlashcardInput[] {
-  const scene = draft.scene.toLowerCase() as SceneType;
-  if (mode === 'paragraph') {
-    return [{
-      sessionId: draft.sessionId,
-      front: draft.sourceText,
-      back: {
-        userTranslation: draft.userTranslation,
-        aiRevision: draft.issues[0]?.revised ?? draft.userTranslation,
-        feedbackSummary: draft.issues.map(i => i.title).slice(0, 3),
-      },
-      scene,
-      context: draft.context,
-    }];
-  }
-  return draft.issues.map(iss => ({
-    sessionId: draft.sessionId,
-    front: iss.original,
-    back: {
-      userTranslation: iss.original,
-      aiRevision: iss.revised,
-      feedbackSummary: [iss.reason],
-    },
-    scene,
-    context: draft.context,
-  }));
-}
+import { buildCards } from '@/lib/buildCards';
+import type { SessionDraft } from '@/lib/buildCards';
 
 function readDraft(): SessionDraft | null {
   if (typeof window === 'undefined') return null;

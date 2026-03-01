@@ -3,7 +3,7 @@
 
 // ─── Response (200) ───────────────────────────────────────────────────────────
 
-interface GetFlashcardsDueResponse {
+export interface GetFlashcardsDueResponse {
   success: true
   data: Array<{
     id: string
