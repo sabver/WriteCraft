@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import enMessages from '../../messages/en.json';
 import {
   DEFAULT_LOCALE,
+  DEFAULT_TIME_ZONE,
   LOCALE_STORAGE_KEY,
   LOCALES,
   type Locale,
@@ -69,7 +70,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale }}>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages} timeZone={DEFAULT_TIME_ZONE}>
         {children}
       </NextIntlClientProvider>
     </LocaleContext.Provider>

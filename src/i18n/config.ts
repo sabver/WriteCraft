@@ -6,3 +6,4 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   'zh-CN': '中文 (简体)',
 };
 export const LOCALE_STORAGE_KEY = 'writecraft-locale';
+export const DEFAULT_TIME_ZONE = 'UTC';
